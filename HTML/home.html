@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css">
+    <title>ACS</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.es5.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/granim/1.1.0/granim.min.js"></script>
+      <!--Circle slider-->                                
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.3.2/roundslider.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Concert+One|Jacques+Francois+Shadow|Orbitron|Press+Start+2P|Rajdhani&display=swap');
+        @import url("https://fonts.googleapis.com/css?family=Raleway:400,400i,700");
+        /*
+    font-family: 'Jacques Francois Shadow', cursive;
+    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Concert One', cursive;
+    font-family: 'Orbitron', sans-serif;
+    font-family: 'Press Start 2P', cursive;
+    */
+    </style>
+    <!-- Custom Css-->
+    <link rel="stylesheet" href="../CSS/utils.css">
+    <link rel="stylesheet" href="../CSS/home.css">
+    <link rel="stylesheet" href="../CSS/animations.css">
+</head>
+<body>
+    <app-root>
+    <div class="main">
+        <div class="py-2 centered-col center-text">
+            <h1>ACS Admin</h1>
+            <div class="centered-row"> <img src="" alt=""class=" circle-image sml no-border" id="profile-pic">
+            </div>
+            <div class="space-evenly-col">
+                <h5 id="admin-sid"></h5>
+                <h6 id="admin-sname" style="color:rgb(84, 84, 84)"></h6>
+                <h6 id="admin-srole" style="color:rgb(0, 136, 255)"></h6>
+            </div>
+       </div>
+       <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item active" aria-current="page">Home</li>
+            </ol>
+        </nav>
+          
+        <hr/>
+        <div class="centered-row">
+        <div class="centered-row dashborad-bubbles">
+                    <div class="card bubble-rec centered-col grow "id="bubble1" onclick="window.location.href='Members.html'">
+                        <h5 class="light-text center-text">Manage Members</h5>
+                    </div>
+                    <div class="card bubble-rec centered-col grow"id="bubble2" onclick="window.location.href='MessageBoard.html'">
+                            <h5 class="light-text center-text">Message Board</h5>
+                    </div>
+                    <div class="card bubble-rec centered-col grow"id="bubble3">
+                            <h5 class="dark-text center-text">Event Manager</h5>
+                    </div>
+                    <div class="card bubble-rec centered-col grow"id="bubble4">
+                            <h6 class="light-text center-text">Announcement</h6>
+                    </div>
+                    <div class="card bubble-rec centered-col grow"id="bubble5">
+                            <h5 class="light-text center-text">Activities</h5>
+                    </div>
+                    <div class="card bubble-rec centered-col grow"id="bubble6">
+                            <h5 class="dark-text center-text">Meetings</h5>
+                    </div>
+                </div>
+        </div>
+       
+    </div>
+    </app-root>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-database.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        
+            https://firebase.google.com/docs/web/setup#config-web-app -->
+   <!-- JAVASCRIPT -->
+  <script src="../JS/firebaseInit.js"></script>
+   
+    <script src="../JS/home.js"></script>
+</body>
+</html>

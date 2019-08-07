@@ -1,0 +1,26 @@
+.dashborad-bubbles{
+ width:500px;
+ height: 500px;
+ padding: 20px;
+ flex-wrap: wrap;
+
+}
+
+.dashborad-bubbles #bubble1{
+    background-image: linear-gradient(rgb(231, 0, 123),rgb(49, 0, 243))
+}
+.dashborad-bubbles #bubble2{
+    background-image: linear-gradient(rgb(0, 231, 223),rgb(0, 243, 69))
+}
+.dashborad-bubbles #bubble3{
+    background-image: linear-gradient(rgb(231, 223, 0),rgb(162, 243, 0))
+}
+.dashborad-bubbles #bubble4{
+    background-image: linear-gradient(rgb(231, 0, 0),rgb(145, 0, 0))
+}
+.dashborad-bubbles #bubble5{
+    background-image: linear-gradient(rgb(0, 162, 231),rgb(0, 81, 243))
+}
+.dashborad-bubbles #bubble6{
+    background-image: linear-gradient(rgb(255, 221, 239),rgb(216, 87, 109))
+}

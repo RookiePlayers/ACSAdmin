@@ -1,0 +1,17 @@
+.main{
+    text-align: center
+}
+.main small{
+    color: grey;
+    font-size: 10px;
+    font-style: italic
+
+}
+.login-card{
+    width:250px;
+    height: 300px;
+    border-radius: 10px;
+    background-color: whitesmoke;
+    padding: 20px;
+    
+}

@@ -9,6 +9,8 @@
     <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css">
     <title>ACS</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round|Open+Sans">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -32,7 +34,7 @@
     </style>
     <!-- Custom Css-->
     <link rel="stylesheet" href="../CSS/utils.css">
-    <link rel="stylesheet" href="../CSS/home.css">
+    <link rel="stylesheet" href="../CSS/MessageBoard.css">
     <link rel="stylesheet" href="../CSS/animations.css">
 </head>
 <body>
@@ -48,36 +50,30 @@
                 <h6 id="admin-srole" style="color:rgb(0, 136, 255)"></h6>
             </div>
        </div>
-       <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item active" aria-current="page">Home</li>
-            </ol>
-        </nav>
+       
           
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="home.html">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page"><a href="MessageBoard.html">Message Board</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Thread</li>
+            </ol>
+          </nav>
+          
+          
+       <!--div class="centered-row">
+           <div class="space-between-row">
+               <a href="../HTML/home.html" class="btn btn-primary">Back</a>
+           </div>
+       </div-->
+       
         <hr/>
         <div class="centered-row">
-        <div class="centered-row dashborad-bubbles">
-                    <div class="card bubble-rec centered-col grow "id="bubble1" onclick="window.location.href='Members.html'">
-                        <h5 class="light-text center-text">Manage Members</h5>
-                    </div>
-                    <div class="card bubble-rec centered-col grow"id="bubble2" onclick="window.location.href='MessageBoard.html'">
-                            <h5 class="light-text center-text">Message Board</h5>
-                    </div>
-                    <div class="card bubble-rec centered-col grow"id="bubble3">
-                            <h5 class="dark-text center-text">Event Manager</h5>
-                    </div>
-                    <div class="card bubble-rec centered-col grow"id="bubble4">
-                            <h6 class="light-text center-text">Announcement</h6>
-                    </div>
-                    <div class="card bubble-rec centered-col grow"id="bubble5">
-                            <h5 class="light-text center-text">Activities</h5>
-                    </div>
-                    <div class="card bubble-rec centered-col grow"id="bubble6">
-                            <h5 class="dark-text center-text">Meetings</h5>
-                    </div>
-                </div>
+             <div class="message-thread centered-col">
+
+       </div>
         </div>
-       
+      
     </div>
     </app-root>
     <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-app.js"></script>
@@ -86,12 +82,11 @@
     <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-database.js"></script>
 
     <!-- TODO: Add SDKs for Firebase products that you want to use
-        <script src="../JS/offlineSetup.js"></script>
-   <script src="../JS/goOffline.js"></script>  
+        
             https://firebase.google.com/docs/web/setup#config-web-app -->
    <!-- JAVASCRIPT -->
-  <script src="../JS/firebaseInit.js"></script>
- 
+   <script src="../JS/firebaseInit.js"></script>
     <script src="../JS/home.js"></script>
+    <script src="../JS/MessageBoard.js"></script>
 </body>
 </html>

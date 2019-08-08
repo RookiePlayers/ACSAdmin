@@ -52,6 +52,11 @@
     flex-direction: column;
     justify-content: start;
 }
+.left-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
 .centered-col{
     display: flex;
     flex-direction: column;
@@ -189,4 +194,23 @@
 .circle-image.lrg {
     width:150px;
     height: 150px;
+}
+.slick-prev {
+    left: 100px;
+    z-index: 999;
+}
+
+.slick-next {
+    right: 100px;
+    z-index: 999;
+}
+
+.slick-prev {
+    left: 100px;
+    z-index: 999;
+}
+
+.slick-next {
+    right: 100px;
+    z-index: 999;
 }

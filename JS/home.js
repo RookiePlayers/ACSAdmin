@@ -15,6 +15,24 @@ function setupProfile(){
     $("#admin-image").attr("src",ADMINPROFILE.profile.image!=undefined?ADMINPROFILE.profile.image:"")
     $("#admin-sname").text((ADMINPROFILE.profile.first_name!=undefined?ADMINPROFILE.profile.first_name:"")+" "+(ADMINPROFILE.profile.last_name!=undefined?ADMINPROFILE.profile.last_name:""));
     $("#admin-srole").text(ADMINPROFILE.role!=undefined?ADMINPROFILE.role:"");
+    let database = firebase.database();
+    firebase.auth().onAuthStateChanged(function(user) { //or use firebase.auth().currentUser;
+    if (user) {
+     // User is signed in. 
+     database.ref("Profiles/"+user.uid+"/")
+    .on("value",(ds)=>{
+        console.log(ds.val())
+        var profile=ds;
+        profile.forEach((p)=>{
+            console.log(p.val())
+           PROFILES.push(p.val());
+        })
+      
+    })
+    } else {
+    // No user is signed in.
+    }
+    });
    
    
 }

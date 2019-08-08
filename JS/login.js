@@ -70,7 +70,7 @@ function varifyAsAdmin(user){
 
 }
 function launchAdminSite(){
-    window.location.href="../HTML/home.html";
+    window.location.href="../HTML/launcher.html";
 }
 function denyAccess(){
     alert("Sorry This User is not an ACS Admin");

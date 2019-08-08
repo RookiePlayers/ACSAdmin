@@ -1,5 +1,6 @@
 var MESSAGES=[];
 var PROFILES=[];
+var MyProfile;
 $( document ).ready(function() {
     // Handler for .ready() called.
     
@@ -56,30 +57,51 @@ $( document ).ready(function() {
 
 })();
     let database = firebase.database();
+    firebase.auth().onAuthStateChanged(function(user) {
        
-    database.ref("Profile/")
-    .on("value",(ds)=>{
-        console.log(ds.val())//ids
-        ds.forEach(e=>{
-         var uid=e;
-         console.log(e.key)
-        uid.forEach((s)=>{
+       
+        database.ref("Profile/"+user.uid).on("child_added",(p)=>{
+            console.log(p.val());
+             MyProfile={"id":user.uid,"profile":p.val()}
+       
+                    database.ref("Profile/")
+            .on("value",(ds)=>{
+                console.log(ds.val())//ids
+                ds.forEach(e=>{
+                var uid=e;
+                console.log(e.key)
+                uid.forEach((s)=>{
 
-            console.log("-->",s.val());
-         
-            PROFILES.push({"id":e.key,"profile":s.val()});
+                    console.log("-->",s.val());
+                
+                    PROFILES.push({"id":e.key,"profile":s.val()});
+                
+                    
             
-       
-        });
-      
+                });
+            
+            });
+            initMB()
+            })
+        })
     });
-      initMB()
-    })
+     
+   
 
 });
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
 function loadMessageBoard(){
  var db = firebase.firestore();
-    let doc = db.collection('MessageBoard').onSnapshot(querySnapshot => {
+    let doc = db.collection('MessageBoard').onSnapshot({ includeMetadataChanges: true },querySnapshot => {
         querySnapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
             console.log('New Message: ', change.doc.data());
@@ -94,11 +116,14 @@ function loadMessageBoard(){
             console.log('Removed Message: ', change.doc.data());
             MESSAGES.splice (MESSAGES.indexOf(change.doc.data()))
           }
+          var source = querySnapshot.metadata.fromCache ? "local cache" : "server";
+          console.log("Data came from " + source);
         });
       });
 }
 
 function initMB(){
+   
     loadDB()
 }
 function loadDB(){
@@ -135,6 +160,7 @@ function MessageBoardCard(messageBoard)
 
     card.setAttribute("class","card");
     card_head.setAttribute("class","card-header space-between-row");
+    card_head.style.width="100%";
     card_body.setAttribute("class","card-body");
     card_footer.setAttribute("class","card-footer space-between-row");
 
@@ -171,7 +197,11 @@ function MessageBoardCard(messageBoard)
     actions.setAttribute("div","space-between-row");
 
     var upvoteIc=document.createElement("ic");
-    upvoteIc.setAttribute("class","far fa-thumbs-up");
+    upvoteIc.setAttribute("class","far fa-thumbs-up grow");
+    upvoteIc.addEventListener("click",()=>{
+        toggleLike(messageBoard,upvoteIc,upvoteLbl);
+    })
+
     var upvoteLbl=document.createElement("label");
     upvoteLbl.setAttribute("style","margin:12px");
     upvoteLbl.textContent=messageBoard.upvote.length+"";
@@ -184,7 +214,7 @@ function MessageBoardCard(messageBoard)
 
     
     var downvoteIc=document.createElement("ic");
-    downvoteIc.setAttribute("class","far fa-thumbs-down");
+    downvoteIc.setAttribute("class","far fa-thumbs-down grow");
     var downvoteLbl=document.createElement("label");
     downvoteLbl.setAttribute("style","margin:12px");
     downvoteLbl.textContent=messageBoard.downvotes.length+"";
@@ -192,19 +222,28 @@ function MessageBoardCard(messageBoard)
     miniRow1.setAttribute("div","row");
     miniRow1.appendChild(downvoteIc);
     miniRow1.appendChild(downvoteLbl);
+    downvoteIc.addEventListener("click",()=>{
+        toggleLike(messageBoard,downvoteIc,downvoteLbl);
+    })
+
+
 
     var commentIc=document.createElement("ic");
-    commentIc.setAttribute("class","fas fa-comment-alt");
+    commentIc.setAttribute("class","fas fa-comment-alt grow");
     var commentLbl=document.createElement("label");
     commentLbl.setAttribute("style","margin:12px");
     commentLbl.textContent=messageBoard.comments.length+"";
     var miniRow2=document.createElement("div");
+    commentIc.addEventListener("click",()=>{
+        setupMessageThread(messageBoard,card_head.cloneNode(true),miniRow.cloneNode(true),miniRow1.cloneNode(true),card_body.cloneNode(true));
+       
+    })
     miniRow2.setAttribute("div","row");
     miniRow2.appendChild(commentIc);
     miniRow2.appendChild(commentLbl);
 
     var shareIc=document.createElement("ic");
-    shareIc.setAttribute("class","fa fa-share");
+    shareIc.setAttribute("class","fa fa-share grow");
     var shareLbl=document.createElement("label");
     shareLbl.setAttribute("style","margin:12px");
     shareLbl.textContent="Share";
@@ -301,6 +340,502 @@ function MessageBoardCard(messageBoard)
 var isPlaying;
 function togglePlay(video){
   
+}
+function setupMessageThread(message,header,liker,disliker,body){
+    $("#messageThreadModal").modal('show');
+    header.classList.remove("card-header");
+    $("#messageThreadModal").find(".thread-body").html('');
+   $("#messageThreadModal").find(".thread-body").append(body);
+    $(".thread-header").attr("style","padding:0 20px;width:100%")
+    $(".thread-header").html(header.outerHTML);
+    $(".thread-footer").html('');
+    $(".thread-footer").append(liker);
+    $(".thread-footer").append(disliker);
+    liker.getElementsByTagName("ic")[0].addEventListener("click",()=>{
+        toggleLike(message, liker.getElementsByTagName("ic")[0], liker.getElementsByTagName("label")[0]);
+    })
+    disliker.getElementsByTagName("ic")[0].addEventListener("click",()=>{
+        toggleLike(message, disliker.getElementsByTagName("ic")[0], disliker.getElementsByTagName("label")[0]);
+    })
+    $("#addComment").on("click",()=>{
+        addNewComment();
+    })
+    
+
+}
+function toggleLike(message,ic,lbl){
+ 
+
+    //check if already liked
+    if(!alreadyOnList(message.upvote,MyProfile.id))
+    {
+        console.log("Liked");
+        //add me to liked list
+        message.upvote.push(MyProfile.id)
+        //change Color and Number
+        ic.classList.remove("far");
+        ic.classList.add("fas");
+        lbl.textContent=message.upvote.length+"";
+        //update message.vote
+
+    }else{
+        message.upvote.remove(MyProfile.id)
+        ic.classList.remove("fas");
+        ic.classList.add("far");
+        lbl.textContent=message.upvote.length+"";
+        //update message.vote
+    }
+    
+    
+}
+function addNewComment(parent){
+    var card=document.createElement("div");
+    var card_head=document.createElement("div");
+    var card_body=document.createElement("div");
+    var card_footer=document.createElement("div");
+    //card.setAttribute("class","card-content");
+  
+    card_head.setAttribute("class","card-header space-between-row");
+    card_head.style.width="100%";
+    card_body.setAttribute("class","card-body");
+    card_footer.setAttribute("class","card-footer space-between-row");
+
+    var t_text=document.createElement("button");
+    var t_pic=document.createElement("button");
+    var t_vid=document.createElement("button");
+    var t_gif=document.createElement("button");
+    var t_voice=document.createElement("button");
+
+    t_text.setAttribute("class","btn btn-dark type1");
+    t_text.setAttribute("onclick","");
+    t_pic.setAttribute("class","btn btn-dark type2");
+    t_vid.setAttribute("class","btn btn-dark type3");
+    t_gif.setAttribute("class","btn btn-dark type4");
+    t_voice.setAttribute("class","btn btn-dark type5");
+    t_text.textContent="Text";
+    t_pic.textContent="Image";
+    t_vid.textContent="Video";
+    t_gif.textContent="Gif";
+    t_voice.textContent="VM";
+
+    card_head.appendChild(t_text);
+    card_head.appendChild(t_pic);
+    card_head.appendChild(t_vid);
+    card_head.appendChild(t_gif);
+    card_head.appendChild(t_voice);
+    card_body.innerHTML="<textarea id='text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";  
+    onchooseText(card_body,t_text);
+    onchoosePic(card_body);
+    onchooseGif(card_body);
+    onchooseVid(card_body);
+    onchooseRec(card_body);
+    
+    function onchooseText(body,elem){
+    elem.addEventListener("click",()=>{
+        body.innerHTML="<textarea id='text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";   
+        console.log("clikc**");
+    })  
+    }
+    function onchoosePic(body){
+       
+        t_pic.addEventListener("click",()=>{
+            console.log("pic")
+            var option=document.createElement("div");
+            var option1=document.createElement("div");
+            var image=document.createElement("img");
+            image.setAttribute("id","cm-img");
+            image.alt="";
+            image.style.objectFit="cover";
+            image.style.width="100%";
+            image.style.height="150px";
+            
+            option1.setAttribute("class","input-group mb-3");
+            var option2=document.createElement("div");
+            option2.setAttribute("class","input-group mb-3");
+            option.setAttribute("class","left-col");
+            option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='ImageBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
+            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='ImageLink'><label class='' for='ImageLink'></label>"
+          
+            option.innerHTML="";
+            option.appendChild(image);
+           option.appendChild(option1);
+           option.appendChild(option2);
+          
+           body.innerHTML=option.outerHTML;  
+           document.getElementById("ImageBrowse").addEventListener('change',(e)=>{
+              readURL(document.getElementById("ImageBrowse"),(e)=>{document.getElementById("cm-img").src=e.target.result;})
+             })  
+             document.getElementById("ImageLink").addEventListener('keyup',(e)=>{
+                document.getElementById("cm-img").src= document.getElementById("ImageLink").value
+               }) 
+       })  
+       }
+      
+    function onchooseVid(body){
+       
+        t_vid.addEventListener("click",()=>{
+            console.log("vid")
+            var option=document.createElement("div");
+            var option1=document.createElement("div");
+            var video=document.createElement("video");
+            video.setAttribute("autoplay","");
+            video.setAttribute("controls","");
+            video.setAttribute("id","myVideo");
+            video.style.width="100%";
+            video.style.height="100%";
+
+            var videoSrc=document.createElement("source");
+            videoSrc.setAttribute("type","video/mp4");
+           
+            videoSrc.setAttribute("id","videoSrc");
+            video.appendChild(videoSrc);
+            
+            option1.setAttribute("class","input-group mb-3");
+            var option2=document.createElement("div");
+            option2.setAttribute("class","input-group mb-3");
+            option.setAttribute("class","left-col");
+            option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='vidBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
+            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='vidLink'><label class='' for='ImageLink'></label>"
+          
+            option.innerHTML="";
+            option.appendChild(video);
+           option.appendChild(option1);
+           option.appendChild(option2);
+          
+           body.innerHTML=option.outerHTML;  
+           document.getElementById("vidBrowse").addEventListener('change',(e)=>{
+              readURL(document.getElementById("vidBrowse"),(e)=>{document.getElementById("videoSrc").src=e.target.result;document.getElementById("myVideo").load();})
+             })  
+             document.getElementById("vidLink").addEventListener('keyup',(e)=>{
+                document.getElementById("videoSrc").src= document.getElementById("vidLink").value;
+                document.getElementById("myVideo").load();
+               }) 
+       })  
+       }
+       function onchooseGif(body){
+       
+        t_gif.addEventListener("click",()=>{
+            console.log("pic")
+            var option=document.createElement("div");
+            var option1=document.createElement("div");
+            var slider=document.createElement("div");
+            slider.setAttribute("class","gif-slider");
+            var image=document.createElement("img");
+            image.setAttribute("id","cm-gif");
+            image.alt="";
+            image.style.objectFit="cover";
+            image.style.width="100%";
+            image.style.height="150px";
+            
+            option1.setAttribute("class","input-group mb-3");
+            var option2=document.createElement("div");
+            option2.setAttribute("class","input-group mb-3");
+            option.setAttribute("class","left-col");
+            option1.innerHTML="<div class='custom-file'> <input type='text' class='' id='gifBrowse'placeholder='Search Giphy'><label class='custom-text-label' for='gifBrowse'></label>"
+            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='gifLink'><label class='' for='gifLink'></label>"
+          
+            option.innerHTML="";
+            option.appendChild(image);
+            option.appendChild(slider);
+           option.appendChild(option1);
+           option.appendChild(option2);
+          
+           body.innerHTML=option.outerHTML;  
+           document.getElementById("gifBrowse").addEventListener('keyup',(e)=>{
+              var val=$('#gifBrowse').val();
+             
+              val.replace(" ","+").toLowerCase();
+              var xhr = $.get("http://api.giphy.com/v1/gifs/search?q="+val+"&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=5");
+                xhr.done(function(data) { console.log("success got data", data);
+                setupGifResults(data.data, document.getElementById("cm-gif")); 
+                
+            });
+
+             })  
+             document.getElementById("gifLink").addEventListener('keyup',(e)=>{
+                document.getElementById("cm-gif").src= document.getElementById("ImageLink").value
+               }) 
+       })  
+       }
+       
+
+       var savecomment=document.createElement("button");
+       savecomment.setAttribute("class","btn btn-primary");
+       savecomment.textContent="Post";
+       var discardcomment=document.createElement("button");
+       discardcomment.setAttribute("class","btn btn-secondary");
+      
+       discardcomment.textContent="Discard";
+
+       savecomment.addEventListener("click",()=>{
+
+       })
+      discardcomment.addEventListener("click",()=>{
+       // $("#commentThreadModal").modal('hide');
+       document.getElementsByClassName("comment-content")[0].innerHTML="";
+    });
+
+    
+    card.appendChild(card_head);
+    card.appendChild(card_body);
+    card.appendChild(card_footer);
+
+    card_footer.appendChild(savecomment);
+    card_footer.appendChild(discardcomment);
+    document.getElementsByClassName("comment-content")[0].innerHTML="";
+    document.getElementsByClassName("comment-content")[0].appendChild(card);
+    //$("#commentThreadModal").modal('show');
+
+}
+function setupGifResults(data,parent){
+    
+    document.getElementsByClassName("gif-slider")[0].innerHTML="";
+    console.log(data.length)
+    for(var i=0;i<data.length;i++){
+        var giphy=data[i];
+        console.log(giphy)
+        var img=document.createElement("img");
+        img.alt="";
+        img.style.objectFit="cover";
+        img.style.width="50px";
+        img.style.height="50px";
+        img.src=giphy.images.original.url;
+        img.style.margin="12px";
+        document.getElementsByClassName("gif-slider")[0].appendChild(img);
+        clicked(img);
+        function clicked(elem){
+        elem.addEventListener("click",()=>{
+           parent.src= elem.src
+        });
+        }
+        
+    }
+   // var slideContainer = $('.gif-slider');
+   //  slideContainer.slick();
+    
+//parent.innerHTML="";
+//parent.appendChild()
+
+
+    //(".home-featured-spotlight").show();
+
+
+
+
+}
+function setupGiphyAPI(){
+    var xhr = $.get("http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=5");
+xhr.done(function(data) { console.log("success got data", data); });
+}
+function readURL(input,onload) {
+console.log("loaded",input.files);
+
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload =function(e){onload(e)};
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function commentModule(comment){
+    var card=document.createElement("div");
+    var card_head=document.createElement("div");
+    var card_body=document.createElement("div");
+    var card_footer=document.createElement("div");
+
+    card.setAttribute("class","card");
+    card_head.setAttribute("class","card-header space-between-row");
+    card_head.style.width="100%";
+    card_body.setAttribute("class","card-body");
+    card_footer.setAttribute("class","card-footer space-between-row");
+
+    var uploader=document.createElement("div");
+    uploader.innerHTML="<p style='color:black; margin:0 5px;font-size:12px;font-weight:bold'>"+getProfileByID(comment.user).profile.first_name+"<sub style='color:grey;font-size:8px'>~"+getProfileByID(comment.uder).profile.id+"@studentmail.ul.ie</sub></p>"
+
+    var _card_head=document.createElement("div");
+    _card_head.setAttribute("class","row");
+    var _timeAgo=document.createElement("span");
+    _timeAgo.setAttribute("class","timeago");
+    var temp=new Date(comment.date).toISOString();
+    _timeAgo.setAttribute("title",temp);
+    _timeAgo.style.fontSize="12px"
+    
+    
+    card_head.appendChild(_card_head)
+    card_head.appendChild(_timeAgo);
+    var actions=document.createElement("div");
+    actions.setAttribute("div","space-between-row");
+
+    var upvoteIc=document.createElement("ic");
+    upvoteIc.setAttribute("class","far fa-thumbs-up grow");
+    upvoteIc.addEventListener("click",()=>{
+        toggleLike(comment,upvoteIc,upvoteLbl);
+    })
+
+    var upvoteLbl=document.createElement("label");
+    upvoteLbl.setAttribute("style","margin:12px");
+    upvoteLbl.textContent=comment.upvote.length+"";
+    var miniRow=document.createElement("div");
+    miniRow.setAttribute("div","row");
+    miniRow.appendChild(upvoteIc);
+    miniRow.appendChild(upvoteLbl);
+   
+
+
+    
+    var downvoteIc=document.createElement("ic");
+    downvoteIc.setAttribute("class","far fa-thumbs-down grow");
+    var downvoteLbl=document.createElement("label");
+    downvoteLbl.setAttribute("style","margin:12px");
+    downvoteLbl.textContent=comment.downvotes.length+"";
+    var miniRow1=document.createElement("div");
+    miniRow1.setAttribute("div","row");
+    miniRow1.appendChild(downvoteIc);
+    miniRow1.appendChild(downvoteLbl);
+    downvoteIc.addEventListener("click",()=>{
+        toggleLike(comment,downvoteIc,downvoteLbl);
+    })
+
+
+
+    var commentIc=document.createElement("ic");
+    commentIc.setAttribute("class","fas fa-comment grow");
+    var commentLbl=document.createElement("label");
+    commentLbl.setAttribute("style","margin:12px");
+    commentLbl.textContent=comment.replies.length+"";
+    var miniRow2=document.createElement("div");
+    commentIc.addEventListener("click",()=>{
+      addNewComment(card_body);
+    })
+    miniRow2.setAttribute("div","row");
+    miniRow2.appendChild(commentIc);
+    miniRow2.appendChild(commentLbl);
+
+    var shareIc=document.createElement("ic");
+    shareIc.setAttribute("class","fa fa-share grow");
+    var shareLbl=document.createElement("label");
+    shareLbl.setAttribute("style","margin:12px");
+    shareLbl.textContent="Share";
+    var miniRow3=document.createElement("div");
+    miniRow3.setAttribute("div","row");
+    miniRow3.appendChild(shareIc);
+    miniRow3.appendChild(shareLbl);
+
+    card_footer.appendChild(miniRow);
+    card_footer.appendChild(miniRow1);
+    card_footer.appendChild(miniRow2);
+    card_footer.appendChild(miniRow3);
+
+    var caption=document.createElement("h4");
+    caption.textContent=comment.title;
+    caption.style.fontSize="16px";
+    caption.style.fontWeight="none";
+
+ 
+    card_body.appendChild(caption);
+   
+
+    var AspectRatioCont=document.createElement("div");
+    AspectRatioCont.setAttribute("class","card-img overlay-cont");
+
+    var overlay=document.createElement("div");
+    overlay.setAttribute("class","overlay");
+    overlay.innerHTML=comment.image.includes("gif")?"<span class='badge badge-dark'>Gif</span>":"";
+    var image=document.createElement("img");
+    image.src=comment.image;
+    image.alt="";
+    image.style.objectFit="cover";
+    image.style.width="100%";
+    image.style.height="100%";
+
+    var video=document.createElement("video");
+    video.setAttribute("autoplay","");
+    video.setAttribute("controls","");
+    video.style.width="100%";
+    video.style.height="100%";
+    
+
+
+    var videoSrc=document.createElement("source");
+    videoSrc.setAttribute("type","video/mp4");
+    videoSrc.setAttribute("src",comment.video);
+    video.appendChild(videoSrc);
+    
+    if(comment.type=="Image")
+    {
+        AspectRatioCont.appendChild(image);
+        AspectRatioCont.appendChild(overlay);
+        card_body.appendChild(AspectRatioCont);
+    }
+    else
+    if(comment.type=="Video")
+    {
+         AspectRatioCont.appendChild(video);
+         AspectRatioCont.appendChild(overlay);
+       
+        overlay.innerHTML="<span class='badge badge-dark'>Video</span>";
+        card_body.appendChild(AspectRatioCont);
+        
+    }
+
+    
+
+
+    card.appendChild(card_head);
+    card.appendChild(card_body);
+    card.appendChild(card_footer);
+
+    card.style.margin="20px";
+    
+    card.addEventListener("mouseenter",()=>{
+        if(comment.type=="Video")
+           video.play().catch(()=>{})
+        
+    })
+    card.addEventListener("mouseleave",()=>{
+        if(comment.type=="Video")
+       video.pause()
+    
+})
+    return card;
+
+
+}
+function toggleDislike(message,ic,lbl){
+ 
+
+    //check if already liked
+    if(!alreadyOnList(message.downvotes,MyProfile.id))
+    {
+        console.log("Disliked");
+        //add me to liked list
+        message.downvotes.push(MyProfile.id)
+        //change Color and Number
+        ic.classList.remove("far");
+        ic.classList.add("fas");
+        lbl.textContent=message.upvote.length+"";
+        //update message.vote
+
+    }else{
+        message.downvotes.remove(MyProfile.id)
+        ic.classList.remove("fas");
+        ic.classList.add("far");
+        lbl.textContent=message.upvote.length+"";
+        //update message.vote
+    }
+    
+    
+}
+function alreadyOnList(list,uid)
+{
+    var exists=false;
+    list.forEach(e => {
+        if(JSON.stringify(e)==JSON.stringify(uid)){
+            exists=true;
+        }
+    });
+    return exists;
 }
 function isScrolledIntoView(elem)
 {

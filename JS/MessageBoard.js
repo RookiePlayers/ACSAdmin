@@ -1,9 +1,15 @@
 var MESSAGES=[];
 var PROFILES=[];
-var MyProfile;
+var MyProfile; 
+ var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var audioContext //audio context to help us record
+var gumStream; 						//stream from getUserMedia()
+var rec; 							//Recorder.js object
+var input; 							//MediaStreamAudioSourceNode we'll be recording
+
 $( document ).ready(function() {
     // Handler for .ready() called.
-    
+  
 // timeAgo Function
 (function timeAgo(selector) {
 
@@ -286,7 +292,7 @@ function MessageBoardCard(messageBoard)
     image.style.height="100%";
 
     var video=document.createElement("video");
-    video.setAttribute("autoplay","");
+    
     video.setAttribute("controls","");
     video.style.width="100%";
     video.style.height="100%";
@@ -431,14 +437,23 @@ function addNewComment(parent){
     onchooseRec(card_body);
     
     function onchooseText(body,elem){
+       
     elem.addEventListener("click",()=>{
+        player.pause();
+        player.pause();
+        if(rec!=null)rec.stop();
+        clearInterval(recTime);
         body.innerHTML="<textarea id='text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";   
         console.log("clikc**");
     })  
     }
     function onchoosePic(body){
-       
-        t_pic.addEventListener("click",()=>{
+     
+        t_pic.addEventListener("click",()=>{  
+            player.pause();
+            player.pause();
+            if(rec!=null)rec.stop();
+            clearInterval(recTime); 
             console.log("pic")
             var option=document.createElement("div");
             var option1=document.createElement("div");
@@ -472,8 +487,11 @@ function addNewComment(parent){
        }
       
     function onchooseVid(body){
-       
+    
         t_vid.addEventListener("click",()=>{
+            player.pause();
+            if(rec!=null)rec.stop();
+            clearInterval(recTime);
             console.log("vid")
             var option=document.createElement("div");
             var option1=document.createElement("div");
@@ -513,8 +531,11 @@ function addNewComment(parent){
        })  
        }
        function onchooseGif(body){
-       
+      
         t_gif.addEventListener("click",()=>{
+            player.pause();
+            if(rec!=null)rec.stop();
+            clearInterval(recTime);
             console.log("pic")
             var option=document.createElement("div");
             var option1=document.createElement("div");
@@ -557,7 +578,80 @@ function addNewComment(parent){
                }) 
        })  
        }
-       
+       function onchooseRec(body){
+           t_voice.addEventListener("click", () => {
+               isRec = 0;
+              player.pause()
+               if(rec!=null)rec.stop();
+               clearInterval(recTime);
+               console.log("voice")
+               var option = document.createElement("div");
+               option.style.textAlign="center"
+               var option1 = document.createElement("div");
+               var time = document.createElement("label");
+               time.setAttribute("id", "timeElapsed");
+               time.textContent = "--/30s";
+              
+               var info = document.createElement("small");
+              // info.setAttribute("id", "timeElapsed");
+               info.textContent = "click to play/stop, double click to restart";
+
+
+               option.setAttribute("class", "rec centered-row");
+             
+               var option2 = document.createElement("div");
+               option1.setAttribute("class", "centered-col");
+               option2.setAttribute("class", "centered-col text-center overlay-cont record");
+                 var option2b = document.createElement("div");
+                option2b.setAttribute("class", "centered-col text-center circle-overlay");
+               option2b.style.backgroundColor ="white";
+               option2b.style.fontSize="20px"
+                
+                            
+               var option2a = document.createElement("div");
+                 option2a.setAttribute("class", "centered-row");
+                              option2a.appendChild(option2);
+               option2.innerHTML ="<i class='fas fa-assistive-listening-systems'></i>"
+               option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                option2.appendChild(option2b);
+               
+               option2b.addEventListener('click',()=>{
+                 
+                    toggleRecState(option2,option2b,time)
+                })
+               option2b.addEventListener('dblclick', () => {
+
+                isRec=0;
+                   time.textContent = "--/30s";
+                player.pause();
+                   option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                   option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                   option2.appendChild(option2b);
+               })
+               $(".record")
+                   .focusout(function(){
+                    console.log("focus lost")
+      isRec = 0;
+      time.textContent = "--/30s";
+      player.pause();
+      option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+      option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+      option2.appendChild(option2b);
+
+                })
+               option2a.style.width="100%";
+                 option.innerHTML = "";
+               option1.appendChild(info);
+                 option1.appendChild(option2a);
+               option1.appendChild(time);
+             
+               option.appendChild(option1);
+
+               body.innerHTML = "";
+               body.appendChild(option);
+              
+           })  
+        }
 
        var savecomment=document.createElement("button");
        savecomment.setAttribute("class","btn btn-primary");
@@ -574,7 +668,7 @@ function addNewComment(parent){
        // $("#commentThreadModal").modal('hide');
        document.getElementsByClassName("comment-content")[0].innerHTML="";
     });
-
+    
     
     card.appendChild(card_head);
     card.appendChild(card_body);
@@ -586,6 +680,68 @@ function addNewComment(parent){
     document.getElementsByClassName("comment-content")[0].appendChild(card);
     //$("#commentThreadModal").modal('show');
 
+}
+var isRec=0
+function toggleRecState(elem,overlay,lbl) {
+    //0=stop
+    console.log(isRec)
+    if(isRec==1){
+        stopRecording(lbl);
+        isRec=2;//play
+        elem.classList.remove("rotate-center")
+        overlay.innerHTML = "<i class='fas fa-play'></i>"
+        elem.style.border = "#00ff1f solid"
+            elem.innerHTML = "<i class='fas fa-play'></i>"
+        elem.appendChild(overlay);
+    }
+    else if (isRec == 2) {
+        isRec = 3;//pause
+       
+        player.onended=function(){
+            overlay.innerHTML = "<i class='fas fa-play'></i>"
+            elem.style.border = "#00ff1f solid"
+            elem.innerHTML = "<i class='fas fa-play'></i>"
+            elem.appendChild(overlay);
+        }
+        elem.classList.remove("rotate-center")
+        overlay.innerHTML = "<i class='fas fa-pause'></i>"
+        if (player.paused) {
+            player.play().catch(()=>{
+
+            });
+        }
+        elem.style.border = "#00d0ff solid"
+        elem.innerHTML = "<i class='fas fa-pause'></i>"
+        elem.appendChild(overlay);
+    }
+    else if (isRec == 3) {
+        
+        isRec = 2;//play
+        if(!player.paused){
+            player.pause();
+        }
+        elem.classList.remove("rotate-center")
+        overlay.innerHTML = "<i class='fas fa-play'></i>"
+        elem.style.border = "#00ff1f solid"
+        elem.innerHTML = "<i class='fas fa-play'></i>"
+        elem.appendChild(overlay);
+    }
+    else{
+        navigator.mediaDevices.getUserMedia(constraints).then(function (stream) { 
+
+            startRecording(lbl,stream);
+        starttimer(0,elem,overlay,lbl)
+         }).catch((e) => { });
+        
+        isRec=1;
+        elem.classList.add("rotate-center")
+        overlay.innerHTML = "<i class='fas fa-stop'></i>"
+        elem.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+        elem.style.border="#ff0000 dashed"
+        elem.appendChild(overlay);
+
+    }
+    console.log(isRec)
 }
 function setupGifResults(data,parent){
     
@@ -621,6 +777,9 @@ function setupGifResults(data,parent){
 
 
 
+
+}
+function updateTimeText(lbl){
 
 }
 function setupGiphyAPI(){
@@ -846,4 +1005,183 @@ function isScrolledIntoView(elem)
     var elemBottom = elemTop + $(elem).height();
 
     return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+}
+var recTime; var constraints = { audio: true, video: false }
+function startRecording(lbl,stream) {
+    console.log("recordButton clicked");
+
+	/*
+		Simple constraints object, for more advanced audio features see
+		https://addpipe.com/blog/audio-constraints-getusermedia/
+	*/
+
+   
+
+    /*
+      Disable the record button until we get a success or fail from getUserMedia() 
+  */
+
+    
+
+    
+	/*
+    
+    	We're using the standard promise bas
+    ed getUserMedia() 
+    	https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+	*/
+
+   // navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+        console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
+
+		/*
+			create an audio context after getUserMedia is called
+			sampleRate might change after getUserMedia is called, like it does on macOS when recording through AirPods
+			the sampleRate defaults to the one set in your OS for your playback device
+		*/
+        audioContext = new AudioContext();
+
+        //update the format 
+       // document.getElementById("formats").innerHTML = "Format: 1 channel pcm @ " + audioContext.sampleRate / 1000 + "kHz"
+
+        /*  assign to gumStream for later use  */
+        gumStream = stream;
+
+        /* use the stream */
+        input = audioContext.createMediaStreamSource(stream);
+
+		/* 
+			Create the Recorder object and configure to record mono sound (1 channel)
+			Recording 2 channels  will double the file size
+		*/
+        rec = new Recorder(input, { numChannels: 1 })
+
+        //start the recording process
+        rec.record()
+
+
+        console.log("Recording started");
+
+        var t=0;
+      
+        
+
+   /* }).catch(function (err) {
+        //enable the record button if getUserMedia() fails
+      
+    });*/
+}
+function starttimer(t,elem,overlay,lbl){
+   
+        recTime=setInterval(() => {
+            t+=1000;
+           console.log(t/1000)
+            if(t>=30000)toggleRecState(elem,overlay,lbl)
+            else {
+               lbl.textContent=t/1000+"/30s";
+            }
+            }, 1000);
+    }
+function pauseRecording() {
+    console.log("pauseButton clicked rec.recording=", rec.recording);
+    if (rec.recording) {
+        //pause
+        if(rec!=null)rec.stop();;
+        pauseButton.innerHTML = "Resume";
+    } else {
+        //resume
+        rec.record()
+        pauseButton.innerHTML = "Pause";
+
+    }
+}
+
+function stopRecording(lbl) {
+    console.log("stopButton clicked");
+    clearInterval(recTime);
+    //disable the stop button, enable the record too allow for new recordings
+   
+    if(rec!=null)rec.stop();;
+
+    //stop microphone access
+    gumStream.getAudioTracks()[0].stop();
+_lbl=lbl;
+    //create the wav blob and pass it on to createDownloadLink
+    rec.exportWAV(createDownloadLink);
+}
+var player=new Audio();
+var _lbl="";
+function createDownloadLink(blob) {
+
+    var url = URL.createObjectURL(blob);
+    var au = document.createElement('audio');
+    var li = document.createElement('li');
+    var link = document.createElement('a');
+
+    //name of .wav file to use during upload and download (without extendion)
+    var filename = new Date().toISOString();
+
+    //add controls to the <audio> element
+    au.controls = true;
+    au.src = url;
+
+    player=new Audio();
+    player.src=url;
+    player.onloadeddata=function(){
+     _lbl.textContent=calculateTotalValue(player.duration)
+   
+    }
+    player.ontimeupdate=function() {
+        _lbl.textContent =calculateTotalValue(player.currentTime)+"/"+ calculateTotalValue(player.duration)
+    }
+
+    //save to disk link
+    link.href = url;
+    link.download = filename + ".wav"; //download forces the browser to donwload the file using the  filename
+    link.innerHTML = "Save to disk";
+
+    //add the new audio element to li
+    li.appendChild(au);
+
+    //add the filename to the li
+    li.appendChild(document.createTextNode(filename + ".wav "))
+
+    //add the save to disk link to li
+    li.appendChild(link);
+
+    //upload link
+    var upload = document.createElement('a');
+    upload.href = "#";
+    upload.innerHTML = "Upload";
+    upload.addEventListener("click", function (event) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function (e) {
+            if (this.readyState === 4) {
+                console.log("Server returned: ", e.target.responseText);
+            }
+        };
+        var fd = new FormData();
+        fd.append("audio_data", blob, filename);
+        xhr.open("POST", "upload.php", true);
+        xhr.send(fd);
+    })
+    li.appendChild(document.createTextNode(" "))//add a space in between
+    li.appendChild(upload)//add the upload link to li
+
+    //add the li element to the ol
+   // recordingsList.appendChild(li);
+}
+function calculateTotalValue(length) {
+    //;
+
+
+    var s = parseInt(length % 60);
+    var m = parseInt((length / 60) % 60);
+
+    if (s < 10) s = '0' + s;
+    if (m < 10) m = '0' + m;
+    var time = m + ':' + s;
+    if (time == "NaN:NaN") return ".."
+    else
+        return time;
 }

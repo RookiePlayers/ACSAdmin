@@ -1,4 +1,12 @@
-.message-board {
-    width:60%;
+    .message-board {
+        width: 60%;
+    }
     
-}
+    .record {
+        width: 100px;
+        height: 100px;
+        border-radius: 100%;
+        border: #9cffaf dashed;
+        margin: 10px;
+        background-color: transparent
+    }

@@ -6,7 +6,7 @@ var MyProfile;
 var gumStream; 						//stream from getUserMedia()
 var rec; 							//Recorder.js object
 var input; 							//MediaStreamAudioSourceNode we'll be recording
-
+var player=new Audio();
 $( document ).ready(function() {
     // Handler for .ready() called.
   
@@ -156,7 +156,7 @@ function getProfileByID(id){
    return res;
 
 }
-
+var CURRENTMESSAGE="";
 function MessageBoardCard(messageBoard)
 {
     var card=document.createElement("div");
@@ -241,6 +241,7 @@ function MessageBoardCard(messageBoard)
     commentLbl.textContent=messageBoard.comments.length+"";
     var miniRow2=document.createElement("div");
     commentIc.addEventListener("click",()=>{
+        CURRENTMESSAGE=messageBoard;
         setupMessageThread(messageBoard,card_head.cloneNode(true),miniRow.cloneNode(true),miniRow1.cloneNode(true),card_body.cloneNode(true));
        
     })
@@ -348,6 +349,8 @@ function togglePlay(video){
   
 }
 function setupMessageThread(message,header,liker,disliker,body){
+    getCommentByReference(message.messageId);
+  //  updateCommentUI(message.messageId)
     $("#messageThreadModal").modal('show');
     header.classList.remove("card-header");
     $("#messageThreadModal").find(".thread-body").html('');
@@ -364,7 +367,32 @@ function setupMessageThread(message,header,liker,disliker,body){
         toggleLike(message, disliker.getElementsByTagName("ic")[0], disliker.getElementsByTagName("label")[0]);
     })
     $("#addComment").on("click",()=>{
-        addNewComment();
+        addNewComment(document.getElementsByClassName('comments-body')[0],message);
+        CURRENTMESSAGE=message;
+    })
+    
+
+}
+
+function setupcommentThread(comment,header,liker,disliker,body){
+    $("#CommentThreadModal").modal('show');
+    header.classList.remove("card-header");
+    $("#CommentThreadModal").find(".thread-body").html('');
+   $("#CommentThreadModal").find(".thread-body").append(body);
+   $("#CommentThreadModal").find(".thread-header").attr("style","padding:0 20px;width:100%")
+   $("#CommentThreadModal").find(".thread-header").html(header.outerHTML);
+   $("#CommentThreadModal").find(".thread-footer").html('');
+   $("#CommentThreadModal").find(".thread-footer").append(liker);
+   $("#CommentThreadModal").find(".thread-footer").append(disliker);
+    liker.getElementsByTagName("ic")[0].addEventListener("click",()=>{
+        toggleLike(comment, liker.getElementsByTagName("ic")[0], liker.getElementsByTagName("label")[0]);
+    })
+    disliker.getElementsByTagName("ic")[0].addEventListener("click",()=>{
+        toggleLike(comment, disliker.getElementsByTagName("ic")[0], disliker.getElementsByTagName("label")[0]);
+    })
+    $("#CommentThreadModal").find("#addComment").on("click",()=>{
+        for(var i=0;i<$("#CommentThreadModal").find('.comments-body').length;i++)
+        addNewComment( $("#CommentThreadModal").find('.comments-body').get(i),comment,$("#CommentThreadModal"));
     })
     
 
@@ -394,13 +422,37 @@ function toggleLike(message,ic,lbl){
     
     
 }
-function addNewComment(parent){
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
+        d += performance.now(); //use high-precision timer if available
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+function addNewComment(parent,message,reply=""){
+    var comment={
+        "commentId":generateUUID(),
+        "user":MyProfile.id,
+        "upvote":[],
+        "downvotes":[],
+        "type":"",
+        "image":"",
+        "gif":"",
+        "video":"",
+        "voice":"",
+        "text":"",
+        "date":+new Date(),
+        "comments":[]
+    }
     var card=document.createElement("div");
     var card_head=document.createElement("div");
     var card_body=document.createElement("div");
     var card_footer=document.createElement("div");
     //card.setAttribute("class","card-content");
-  
     card_head.setAttribute("class","card-header space-between-row");
     card_head.style.width="100%";
     card_body.setAttribute("class","card-body");
@@ -429,13 +481,14 @@ function addNewComment(parent){
     card_head.appendChild(t_vid);
     card_head.appendChild(t_gif);
     card_head.appendChild(t_voice);
-    card_body.innerHTML="<textarea id='text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";  
+    card_body.innerHTML="<textarea id='_text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";  
+   
     onchooseText(card_body,t_text);
     onchoosePic(card_body);
     onchooseGif(card_body);
     onchooseVid(card_body);
     onchooseRec(card_body);
-    
+   
     function onchooseText(body,elem){
        
     elem.addEventListener("click",()=>{
@@ -443,18 +496,33 @@ function addNewComment(parent){
         player.pause();
         if(rec!=null)rec.stop();
         clearInterval(recTime);
-        body.innerHTML="<textarea id='text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";   
+        body.innerHTML="<textarea id='_text'style='width:100%;height:136px' placeholder='Enter Reply'></textarea>";   
+        card_body.getElementsByTagName("textarea")[0].addEventListener('keyup',()=>{
+            comment.type="Text";
+            comment.image="";
+            comment.video="";
+            comment.voice="";
+            comment.gif="";
+    
+            comment.text=$("#_text").val();
+            //console.log($("#_text").val());
+        })
+  
         console.log("clikc**");
     })  
     }
     function onchoosePic(body){
      
-        t_pic.addEventListener("click",()=>{  
+        t_pic.addEventListener("click",()=>{
+          
             player.pause();
             player.pause();
             if(rec!=null)rec.stop();
             clearInterval(recTime); 
             console.log("pic")
+            var caption=document.createElement("div");
+           caption.setAttribute("class","form-group");
+            caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Comment..'>"
             var option=document.createElement("div");
             var option1=document.createElement("div");
             var image=document.createElement("img");
@@ -469,19 +537,35 @@ function addNewComment(parent){
             option2.setAttribute("class","input-group mb-3");
             option.setAttribute("class","left-col");
             option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='ImageBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
-            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='ImageLink'><label class='' for='ImageLink'></label>"
+            option2.innerHTML="<div class='form-group'> <input type='text' class='form-control custom-link-input' placeholder='or Paste Link' id='ImageLink'><label class='' for='ImageLink'></label>"
           
             option.innerHTML="";
+            option.appendChild(caption);
             option.appendChild(image);
            option.appendChild(option1);
            option.appendChild(option2);
           
            body.innerHTML=option.outerHTML;  
            document.getElementById("ImageBrowse").addEventListener('change',(e)=>{
-              readURL(document.getElementById("ImageBrowse"),(e)=>{document.getElementById("cm-img").src=e.target.result;})
-             })  
+              readURL(document.getElementById("ImageBrowse"),(e)=>{
+                    document.getElementById("cm-img").src=e.target.result;
+                    comment.type="Image";
+                    comment.image=e.target.result;
+                    comment.video="";
+                    comment.voice="";
+                    comment.gif=""
+                    comment.text=$("#caption").val();
+                })
+             
+            })  
              document.getElementById("ImageLink").addEventListener('keyup',(e)=>{
-                document.getElementById("cm-img").src= document.getElementById("ImageLink").value
+                document.getElementById("cm-img").src= document.getElementById("ImageLink").value;
+                comment.type="Image";
+                comment.image=document.getElementById("ImageLink").value;
+                comment.video="";
+                comment.voice="";
+                comment.gif=""
+                comment.text=$("#caption").val();
                }) 
        })  
        }
@@ -492,7 +576,11 @@ function addNewComment(parent){
             player.pause();
             if(rec!=null)rec.stop();
             clearInterval(recTime);
-            console.log("vid")
+            console.log("vid");
+            var caption=document.createElement("div");
+           caption.setAttribute("class","form-group");
+            caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Comment..'>"
+            
             var option=document.createElement("div");
             var option1=document.createElement("div");
             var video=document.createElement("video");
@@ -513,21 +601,36 @@ function addNewComment(parent){
             option2.setAttribute("class","input-group mb-3");
             option.setAttribute("class","left-col");
             option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='vidBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
-            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='vidLink'><label class='' for='ImageLink'></label>"
+            option2.innerHTML="<div class='form-group'> <input type='text' class='form-control custom-link-input' placeholder='or Paste Link' id='vidLink'><label class='' for='ImageLink'></label>"
           
             option.innerHTML="";
+            option.appendChild(caption);
             option.appendChild(video);
            option.appendChild(option1);
            option.appendChild(option2);
           
            body.innerHTML=option.outerHTML;  
            document.getElementById("vidBrowse").addEventListener('change',(e)=>{
-              readURL(document.getElementById("vidBrowse"),(e)=>{document.getElementById("videoSrc").src=e.target.result;document.getElementById("myVideo").load();})
+              readURL(document.getElementById("vidBrowse"),(e)=>{
+                  document.getElementById("videoSrc").src=e.target.result;document.getElementById("myVideo").load();
+                  comment.type="Video";
+                  comment.image="";
+                  comment.gif=""
+                  comment.video=e.target.result;
+                  comment.voice="";
+                  comment.text=$("#caption").val();
+                })
              })  
              document.getElementById("vidLink").addEventListener('keyup',(e)=>{
                 document.getElementById("videoSrc").src= document.getElementById("vidLink").value;
                 document.getElementById("myVideo").load();
-               }) 
+                comment.type="Video";
+                comment.image="";
+                comment.video=document.getElementById("vidLink").value;
+                comment.voice="";
+                comment.gif="";
+                comment.text=$("#caption").val();
+            }) 
        })  
        }
        function onchooseGif(body){
@@ -536,7 +639,11 @@ function addNewComment(parent){
             player.pause();
             if(rec!=null)rec.stop();
             clearInterval(recTime);
-            console.log("pic")
+            console.log("gif");
+            var caption=document.createElement("div");
+           caption.setAttribute("class","form-group");
+            caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Comment..'>"
+            
             var option=document.createElement("div");
             var option1=document.createElement("div");
             var slider=document.createElement("div");
@@ -553,9 +660,10 @@ function addNewComment(parent){
             option2.setAttribute("class","input-group mb-3");
             option.setAttribute("class","left-col");
             option1.innerHTML="<div class='custom-file'> <input type='text' class='' id='gifBrowse'placeholder='Search Giphy'><label class='custom-text-label' for='gifBrowse'></label>"
-            option2.innerHTML="<div class=''> <input type='text' class='custom-link-input' placeholder='or Paste Link' id='gifLink'><label class='' for='gifLink'></label>"
+            option2.innerHTML="<div class='form-group'> <input type='text' class='custom-link-input form-control' placeholder='or Paste Link' id='gifLink'><label class='' for='gifLink'></label>"
           
             option.innerHTML="";
+            option.appendChild(caption)
             option.appendChild(image);
             option.appendChild(slider);
            option.appendChild(option1);
@@ -568,14 +676,21 @@ function addNewComment(parent){
               val.replace(" ","+").toLowerCase();
               var xhr = $.get("http://api.giphy.com/v1/gifs/search?q="+val+"&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=5");
                 xhr.done(function(data) { console.log("success got data", data);
-                setupGifResults(data.data, document.getElementById("cm-gif")); 
-                
+                setupGifResults(data.data, document.getElementById("cm-gif"),comment); 
+              
             });
 
              })  
              document.getElementById("gifLink").addEventListener('keyup',(e)=>{
-                document.getElementById("cm-gif").src= document.getElementById("ImageLink").value
-               }) 
+                document.getElementById("cm-gif").src= document.getElementById("gifLink").value
+                comment.type="Gif";
+                comment.image="";
+                comment.video="";
+                comment.voice="";
+                comment.gif=document.getElementById("gifLink").value;
+                comment.text=$("#caption").val();
+            
+            }) 
        })  
        }
        function onchooseRec(body){
@@ -617,7 +732,7 @@ function addNewComment(parent){
                
                option2b.addEventListener('click',()=>{
                  
-                    toggleRecState(option2,option2b,time)
+                    toggleRecState(option2,option2b,time,comment)
                 })
                option2b.addEventListener('dblclick', () => {
 
@@ -631,12 +746,12 @@ function addNewComment(parent){
                $(".record")
                    .focusout(function(){
                     console.log("focus lost")
-      isRec = 0;
-      time.textContent = "--/30s";
-      player.pause();
-      option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
-      option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
-      option2.appendChild(option2b);
+                    isRec = 0;
+                    time.textContent = "--/30s";
+                    player.pause();
+                    option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                    option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                    option2.appendChild(option2b);
 
                 })
                option2a.style.width="100%";
@@ -662,31 +777,68 @@ function addNewComment(parent){
        discardcomment.textContent="Discard";
 
        savecomment.addEventListener("click",()=>{
+        console.log(comment);
+        if(comment.type=="Text"&&comment.text==""){
 
+        }
+        else if(comment.type=="Image"&&comment.image==""){
+
+        }
+        else if(comment.type=="video"&&comment.video==""){
+
+        }
+        else if(comment.type=="Gif"&&comment.gif==""){
+
+        }
+        else if(comment.type==""){
+
+        }
+      
+        else{
+            parent.appendChild(commentModule(comment));
+          
+            message.comments.push(comment);
+            console.log(message);
+            console.log("reply",message)
+            console.log("-------------",reply)
+            reply==""?_addComment(message.messageId, comment):addReply(message.commentId,comment);
+            
+            reply!=""?reply.find(".comment-content").html(''):document.getElementsByClassName("comment-content")[0].innerHTML="";
+  
+        }
        })
       discardcomment.addEventListener("click",()=>{
        // $("#commentThreadModal").modal('hide');
-       document.getElementsByClassName("comment-content")[0].innerHTML="";
+       reply!=""?reply.find(".comment-content").html(''):document.getElementsByClassName("comment-content")[0].innerHTML="";
     });
     
     
     card.appendChild(card_head);
     card.appendChild(card_body);
     card.appendChild(card_footer);
+    card_body.getElementsByTagName("textarea")[0].addEventListener('keyup',()=>{
+        comment.type="Text";
+        comment.image="";
+        comment.video="";
+        comment.voice="";
+        comment.gif="";
 
+        comment.text=$("#_text").val();
+        console.log($("#_text").val());
+    })
     card_footer.appendChild(savecomment);
     card_footer.appendChild(discardcomment);
-    document.getElementsByClassName("comment-content")[0].innerHTML="";
-    document.getElementsByClassName("comment-content")[0].appendChild(card);
+    reply!=""?reply.find(".comment-content").html(''):document.getElementsByClassName("comment-content")[0].innerHTML="";
+    reply!=""?reply.find(".comment-content").append(card):document.getElementsByClassName("comment-content")[0].appendChild(card);
     //$("#commentThreadModal").modal('show');
 
 }
 var isRec=0
-function toggleRecState(elem,overlay,lbl) {
+function toggleRecState(elem,overlay,lbl,caption="") {
     //0=stop
     console.log(isRec)
     if(isRec==1){
-        stopRecording(lbl);
+        stopRecording(lbl,caption);
         isRec=2;//play
         elem.classList.remove("rotate-center")
         overlay.innerHTML = "<i class='fas fa-play'></i>"
@@ -727,23 +879,28 @@ function toggleRecState(elem,overlay,lbl) {
         elem.appendChild(overlay);
     }
     else{
+        console.log("gettingMediaDevices",navigator.mediaDevices);
         navigator.mediaDevices.getUserMedia(constraints).then(function (stream) { 
 
             startRecording(lbl,stream);
+            isRec=1;
+            elem.classList.add("rotate-center")
+            overlay.innerHTML = "<i class='fas fa-stop'></i>"
+            elem.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+            elem.style.border="#ff0000 dashed"
+            elem.appendChild(overlay);
         starttimer(0,elem,overlay,lbl)
-         }).catch((e) => { });
+         }).catch((e) => {
+             alert(e.message);
+
+         });
         
-        isRec=1;
-        elem.classList.add("rotate-center")
-        overlay.innerHTML = "<i class='fas fa-stop'></i>"
-        elem.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
-        elem.style.border="#ff0000 dashed"
-        elem.appendChild(overlay);
+       
 
     }
     console.log(isRec)
 }
-function setupGifResults(data,parent){
+function setupGifResults(data,parent,comment){
     
     document.getElementsByClassName("gif-slider")[0].innerHTML="";
     console.log(data.length)
@@ -761,7 +918,14 @@ function setupGifResults(data,parent){
         clicked(img);
         function clicked(elem){
         elem.addEventListener("click",()=>{
-           parent.src= elem.src
+           parent.src= elem.src,
+           comment.type="Gif";
+           comment.image=""
+           comment.video="";
+           comment.voice="";
+           comment.gif=elem.src;
+           comment.text=$("#caption").val();
+       
         });
         }
         
@@ -810,7 +974,7 @@ function commentModule(comment){
     card_footer.setAttribute("class","card-footer space-between-row");
 
     var uploader=document.createElement("div");
-    uploader.innerHTML="<p style='color:black; margin:0 5px;font-size:12px;font-weight:bold'>"+getProfileByID(comment.user).profile.first_name+"<sub style='color:grey;font-size:8px'>~"+getProfileByID(comment.uder).profile.id+"@studentmail.ul.ie</sub></p>"
+    uploader.innerHTML="<p style='color:black; margin:0 5px;font-size:12px;font-weight:bold'>"+getProfileByID(comment.user).profile.first_name+"<sub style='color:grey;font-size:8px'>~"+getProfileByID(comment.user).profile.id+"@studentmail.ul.ie</sub></p>"
 
     var _card_head=document.createElement("div");
     _card_head.setAttribute("class","row");
@@ -820,6 +984,7 @@ function commentModule(comment){
     _timeAgo.setAttribute("title",temp);
     _timeAgo.style.fontSize="12px"
     
+    _card_head.appendChild(uploader);
     
     card_head.appendChild(_card_head)
     card_head.appendChild(_timeAgo);
@@ -862,10 +1027,28 @@ function commentModule(comment){
     commentIc.setAttribute("class","fas fa-comment grow");
     var commentLbl=document.createElement("label");
     commentLbl.setAttribute("style","margin:12px");
-    commentLbl.textContent=comment.replies.length+"";
+    commentLbl.textContent=comment.comments.length+"";
     var miniRow2=document.createElement("div");
     commentIc.addEventListener("click",()=>{
-      addNewComment(card_body);
+        var message={
+            "desc":"",
+            "title":comment.text,
+            "type":comment.type,
+            "downvotes":comment.downvotes,
+            "upvote":comment.upvote,
+            "image":comment.image,
+            "video":comment.video,
+            "gif":comment.gif,
+            "uploader":comment.user,
+            "vm":comment.voice,
+            "postId":generateUUID()
+
+        }
+        $("#CommentThreadModal").find(".comments-body").html('');
+      //  setupMessageThread(message,card_head.cloneNode(true),miniRow.cloneNode(true),miniRow1.cloneNode(true),card_body.cloneNode(true));
+        setupcommentThread(comment,card_head.cloneNode(true),miniRow.cloneNode(true),miniRow1.cloneNode(true),card_body.cloneNode(true));
+    
+        //addNewComment(card_body);
     })
     miniRow2.setAttribute("div","row");
     miniRow2.appendChild(commentIc);
@@ -887,7 +1070,7 @@ function commentModule(comment){
     card_footer.appendChild(miniRow3);
 
     var caption=document.createElement("h4");
-    caption.textContent=comment.title;
+    caption.textContent=comment.text;
     caption.style.fontSize="16px";
     caption.style.fontWeight="none";
 
@@ -907,7 +1090,7 @@ function commentModule(comment){
     image.style.objectFit="cover";
     image.style.width="100%";
     image.style.height="100%";
-
+    overlay.style.height="20%";
     var video=document.createElement("video");
     video.setAttribute("autoplay","");
     video.setAttribute("controls","");
@@ -925,6 +1108,8 @@ function commentModule(comment){
     {
         AspectRatioCont.appendChild(image);
         AspectRatioCont.appendChild(overlay);
+        overlay.innerHTML="<span class='badge badge-dark'>Image</span>";
+    
         card_body.appendChild(AspectRatioCont);
     }
     else
@@ -936,6 +1121,16 @@ function commentModule(comment){
         overlay.innerHTML="<span class='badge badge-dark'>Video</span>";
         card_body.appendChild(AspectRatioCont);
         
+    }else
+        if(comment.type=="Gif")
+    {
+        image.src=comment.gif;
+        AspectRatioCont.appendChild(image);
+        AspectRatioCont.appendChild(overlay);
+        overlay.innerHTML="<span class='badge badge-dark'>Gif</span>";
+    
+        card_body.appendChild(AspectRatioCont);
+    
     }
 
     
@@ -945,7 +1140,7 @@ function commentModule(comment){
     card.appendChild(card_body);
     card.appendChild(card_footer);
 
-    card.style.margin="20px";
+    card.style.margin="5px";
     
     card.addEventListener("mouseenter",()=>{
         if(comment.type=="Video")
@@ -960,6 +1155,201 @@ function commentModule(comment){
     return card;
 
 
+}
+function loadAllComments(){
+
+}
+var reloadMessage=false;
+function getCommentByReference(parentId){
+    var comments=[];
+    const db = firebase.firestore();
+    db.collection("MessageComments").where("parentId", "==" , parentId).get()
+    .then(function(snapshot) {
+        console.log(snapshot.docs);
+        snapshot.docs.forEach(doc => {
+           comments.push(doc.data().body);
+           console.log(doc.data);
+    
+        });
+        console.log(comments);
+        comments.reverse();
+        updateCommentUI(comments)
+    })
+
+}
+function _getCommentByReference(parentId){
+    var comments=[];
+    const db = firebase.firestore();
+    db.collection("MessageComments").where("parentId", "==" , parentId).get()
+    .then(function(snapshot) {
+        console.log(snapshot.docs);
+        snapshot.docs.forEach(doc => {
+           comments.push(doc.data().body);
+           console.log(doc.data);
+    
+        });
+        console.log(comments);
+        comments.reverse();
+        updateReplyUI(comments)
+    })
+
+}
+/*
+function updateCommentUI(messageId){
+    $("#messageThreadModal").find(".comments-body").html('');
+    var comments=[];
+    let db = firebase.firestore();
+    // Create a query against the collection.
+    
+    db.collection("MessageBoard").where("messageId", "==" , messageId).get()
+    .then(function(snapshot) {
+        
+        snapshot.docs.forEach(doc => {
+            console.log(doc.data())
+            comments = doc.data().comments;
+        comments.forEach((comment)=>{
+            console.log("--",comment)
+         $("#messageThreadModal").find(".comments-body").append(commentModule(comment))
+   
+        })
+        })
+    })
+    
+}
+
+*/
+function updateCommentUI(comments){
+    $("#messageThreadModal").find(".comments-body").html('');
+   
+    
+        comments.forEach((comment)=>{
+            console.log("--",comment)
+         $("#messageThreadModal").find(".comments-body").append(commentModule(comment))
+   
+        })
+   
+}
+
+function updateReplyUI(comments){
+    $("#messageThreadModal").find(".comments-body").html('');
+    
+        comments.forEach((comment)=>{
+            console.log("--",comment)
+         $("#commentThreadModal").find(".comments-body").append(commentModule(comment))
+   
+        })
+      
+    
+}
+function _addComment(parentId,child){
+    //save to 
+    console.log("$$",child)
+  let _db = firebase.firestore();
+        var pair={"pid":parentId,"cid":child.commentId};
+        //save pair
+        _db.collection("MessageBoard").where("messageId", "==" , parentId).get()
+        .then(function(snapshot) {
+            
+            snapshot.docs.forEach(doc => {
+                const comments = doc.data().comments;console.log(doc.data())
+                comments.push(pair)
+                
+                _db.collection("MessageBoard").doc(doc.id).update({
+                    "comments":comments
+                }).then(function (response) {
+            
+                })
+                .catch(function (error) {
+            
+                });
+            })
+        })
+
+        
+         _db.collection("MessageComments")
+                .doc(child.commentId)
+                .set({"parentId":parentId,"body":child,"id":child.commentId})
+                .then(function (response) {
+            
+                })
+                .catch(function (error) {
+            
+                });
+
+  
+    //save to Comments Doc
+
+   
+
+}
+function addComment(messageId,newComment){
+    let db = firebase.firestore();
+    // Create a query against the collection.
+    
+    db.collection("MessageBoard").where("messageId", "==" , messageId).get()
+    .then(function(snapshot) {
+        
+        snapshot.docs.forEach(doc => {
+            const message = doc.id;
+            console.log(message)
+            db.collection("MessageBoard").doc(message).update({ 
+                comments: newComment
+                }).then((ref)=>{ 
+                      setupMessageThread()
+                      console.log(ref);
+                }).catch(function(error) {
+                    /* error */
+                   
+                    });
+            })
+       //
+
+    })
+    .catch(function(error) {
+    /* error */
+    console.log("--",error);
+    });
+}
+function addReply(parentId,child){
+    console.log("-------------")
+    console.log("$$",child)
+  let _db = firebase.firestore();
+        var pair={"pid":parentId,"cid":child.commentId};
+        //save pair
+        console.log(parentId,child.commentId);
+        _db.collection("MessageComments").where("id", "==" , parentId).get()
+        .then(function(snapshot) {
+            
+            snapshot.docs.forEach(doc => {
+                const body = doc.data().body;console.log(doc.data())
+                body.comments.push(pair)
+                
+                _db.collection("MessageComments").doc(parentId).update({
+                    "body":body
+                }).then(function (response) {
+            
+                })
+                .catch(function (error) {
+            
+                });
+            })
+        })
+
+        
+         _db.collection("MessageComments")
+                .doc(child.commentId)
+                .set({"parentId":parentId,"body":child,"id":child.commentId})
+                .then(function (response) {
+            
+                })
+                .catch(function (error) {
+            
+                });
+
+  
+    //save to Comments Doc
+
+   
 }
 function toggleDislike(message,ic,lbl){
  
@@ -1096,21 +1486,28 @@ function pauseRecording() {
     }
 }
 
-function stopRecording(lbl) {
+function stopRecording(lbl,caption) {
     console.log("stopButton clicked");
     clearInterval(recTime);
     //disable the stop button, enable the record too allow for new recordings
    
-    if(rec!=null)rec.stop();;
+    if(rec!=null)
+    {
+        rec.stop();
 
     //stop microphone access
     gumStream.getAudioTracks()[0].stop();
-_lbl=lbl;
+    _lbl=lbl;
     //create the wav blob and pass it on to createDownloadLink
-    rec.exportWAV(createDownloadLink);
+    exportW(caption);
+    function exportW(){
+    rec.exportWAV(createDownloadLink(this,caption));
+    }
 }
-var player=new Audio();
+}
+
 var _lbl="";
+var currentAudio="";
 function createDownloadLink(blob) {
 
     var url = URL.createObjectURL(blob);
@@ -1167,6 +1564,14 @@ function createDownloadLink(blob) {
     })
     li.appendChild(document.createTextNode(" "))//add a space in between
     li.appendChild(upload)//add the upload link to li
+    if(comment!=""){
+    comment.type="Gif";
+    comment.image=""
+    comment.video="";
+    comment.voice=url;
+    comment.gif="";
+    comment.text="";
+    }
 
     //add the li element to the ol
    // recordingsList.appendChild(li);

@@ -10,3 +10,7 @@
         margin: 10px;
         background-color: transparent
     }
+    .comments-body{
+     padding-left: 0;
+     padding-right: 0;   
+    }

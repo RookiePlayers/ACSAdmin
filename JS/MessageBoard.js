@@ -105,12 +105,467 @@ Array.prototype.remove = function() {
     }
     return this;
 };
+function createButtonElem(tag="button",text="",click=()=>{},classAtr="btn btn-primary grow")
+{
+    var button=document.createElement(tag);
+    button.setAttribute("class",classAtr)
+    button.textContent=text;
+    button.addEventListener("click",()=>{click});
+    return button;
+}
+setupUploadBar();
+function setupUploadBar(){
+    $("#upload-text-btn").on("click",function(){
+        console.log("clcikc")
+        $("#upload-menu").html('');
+        $("#upload-menu").append(uploadBar("text"));
+    })
+    $("#upload-image-btn").on("click",function(){
+        console.log("clcikc")
+        $("#upload-menu").html('');
+        $("#upload-menu").append(uploadBar("image"));
+    })
+    $("#upload-video-btn").on("click",function(){
+        console.log("clcikc")
+        $("#upload-menu").html('');
+        $("#upload-menu").append(uploadBar("Video"));
+    })
+    $("#upload-gif-btn").on("click",function(){
+        console.log("clcikc")
+        $("#upload-menu").html('');
+        $("#upload-menu").append(uploadBar("Gif"));
+    })
+    $("#upload-voice-btn").on("click",function(){
+        console.log("clcikc")
+        $("#upload-menu").html('');
+        $("#upload-menu").append(uploadBar("Vm"));
+    })
+}
+function uploadBar(type){
+    var body=document.createElement("div")
+    body.setAttribute("class","card");
+    var message={
+        "comments":[],
+        "desc":"",
+        "downvotes":[],
+        "gif":"",
+        "uploader":MyProfile.id,
+        "image":"",
+        "messageId":generateUUID(),
+        "postedOn":+new Date(),
+        "title":"",
+        "type":"",
+        "upvote":[],
+        "video":"",
+        "voice":""
+    }
+    var button=document.createElement("div");
+    button.setAttribute("class","btn btn-primary grow");
+    button.textContent="Post";
+    button.style.backgroundColor="darkmagenta";
+    button.style.display="none";
+
+
+    switch(type){
+       
+        case "Gif":{
+             var caption=document.createElement("div");searchgif('Lol')
+               caption.setAttribute("class","form-group");
+                caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Caption..'>"
+                var option=document.createElement("div");
+                var option1=document.createElement("div");
+                var image=document.createElement("img");
+                image.setAttribute("id","cm-gif");
+                image.alt="";
+                image.style.objectFit="cover";
+                image.style.width="50%";
+                image.style.height="200px";
+                var GifSearched=document.createElement("div");
+                GifSearched.setAttribute("id","cm-img");
+                GifSearched.setAttribute("class","centered-row-wrap");
+                GifSearched.alt="";
+                GifSearched.style.objectFit="cover";
+                GifSearched.style.width="50%";
+                GifSearched.style.height="150px";
+                GifSearched.style.overflowY="scroll";
+
+                var GifSearchedLbl=document.createElement("label");
+
+                var wrap=document.createElement("div")
+                wrap.setAttribute("class","space-evenly-row");
+                wrap.style.margin="20px"
+
+                function searchgif(search){
+                    var xhr = $.get("http://api.giphy.com/v1/gifs/search?q="+search+"&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=100");
+                    xhr.done(function(data) { console.log("success got data", data);
+                    message.title=caption.textContent;
+                    GifSearchedLbl.textContent="Searched For \'"+search+"\'"
+                    _setupGifResults(data.data, document.getElementById("cm-gif"),GifSearched,message,()=>{
+                        if(image.src.length>=1)
+                   button.style.display="";
+                       else{
+                           button.style.display="none";
+                       }
+                   }); 
+                  
+                    if(image.src.length>=1)
+                    button.style.display="";
+                        else{
+                            button.style.display="none";
+                        }
+  
+                })
+                }
+                var tag1=createButtonElem("span","Lol",()=>{searchgif("Lol")},"badge badge-dark grow");
+                tag1.addEventListener("click",()=>{
+                    searchgif("Lol")
+                })
+                var tag2=createButtonElem("span","Clap",()=>{searchgif("Clap")},"badge badge-dark grow");
+                tag2.addEventListener("click",()=>{
+                    searchgif("Clap")
+                })
+                var tag3=createButtonElem("span","Thumbs up",()=>{searchgif("Thumbs up")},"badge badge-dark grow");
+                tag3.addEventListener("click",()=>{
+                    searchgif("thumps up")
+                })
+                var tag4=createButtonElem("span","What",()=>searchgif("what"),"badge badge-dark grow");
+                tag4.addEventListener("click",()=>{
+                    searchgif("what")
+                })
+                var tag5=createButtonElem("span","Aww",()=>searchgif("Aww"),"badge badge-dark grow");
+                tag5.addEventListener("click",()=>{
+                    searchgif("Aww")
+                })
+                var tag6=createButtonElem("span","Face palm",()=>searchgif("Face palm"),"badge badge-dark grow");
+                tag6.addEventListener("click",()=>{
+                    searchgif("Face Palm")
+                })
+                var tag7=createButtonElem("span","Seriously",()=>searchgif("Seriously"),"badge badge-dark grow");
+                tag7.addEventListener("click",()=>{
+                    searchgif("Seriously")
+                })
+                var tag8=createButtonElem("span","KMT",()=>searchgif("KMT"),"badge badge-dark grow");
+                tag8.addEventListener("click",()=>{
+                    searchgif("Kmt")
+                })
+                var tag9=createButtonElem("span","OMG",()=>searchgif("OMG"),"badge badge-dark grow");
+                tag9.addEventListener("click",()=>{
+                    searchgif("Omg")
+                })
+                var tag10=createButtonElem("span","SMH",()=>searchgif("SMH"),"badge badge-dark grow");
+                tag10.addEventListener("click",()=>{
+                    searchgif("Smh")
+                })
+                wrap.appendChild(tag1);
+                wrap.appendChild(tag2);
+                wrap.appendChild(tag3);
+                wrap.appendChild(tag4);
+                wrap.appendChild(tag5);
+                wrap.appendChild(tag6);
+                wrap.appendChild(tag7);
+                wrap.appendChild(tag8);
+                wrap.appendChild(tag9);
+                wrap.appendChild(tag10);
+                
+                
+
+                
+                option1.setAttribute("class","input-group mb-3");
+                var option2=document.createElement("div");
+                option2.setAttribute("class","left-row");
+                option.setAttribute("class","left-col");
+                option1.innerHTML="<input type='text' class='form-control'id='gifBrowse'placeholder='Search giphy'>"
+               option2.appendChild(image);
+               option2.appendChild(GifSearched)
+                option.innerHTML="";
+                option.appendChild(caption);
+                option.appendChild( GifSearchedLbl)
+                option.appendChild(option2);
+                option.appendChild(wrap);
+            
+               option.appendChild(option1);
+              // option.appendChild(option2);
+              
+               body.innerHTML="";
+               body.appendChild(option); 
+               body.appendChild(button) 
+               option1.getElementsByTagName('input')[0].addEventListener('keyup',(e)=>{
+                var val=$('#gifBrowse').val();
+               
+                val.replace(" ","+").toLowerCase();
+                var xhr = $.get("http://api.giphy.com/v1/gifs/search?q="+val+"&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=100");
+                  xhr.done(function(data) { console.log("success got data", data);
+                  message.title=caption.textContent;
+                  GifSearchedLbl.textContent="Searched For \'"+val+"\'"
+                  _setupGifResults(data.data, document.getElementById("cm-gif"),GifSearched,message,()=>{
+                       if(image.src.length>=1)
+                  button.style.display="";
+                      else{
+                          button.style.display="none";
+                      }
+                  }); 
+                 
+
+              })
+              });
+  
+              button.addEventListener("click",()=>{
+                postMessage(message);
+                document.getElementById("gifBrowse").value="";
+                document.getElementById("cm-gif").src="";
+                $('#upload-menu').collapse('hide')
+            })
+               
+           
+        }break;
+        
+        case "image":{
+            var caption=document.createElement("div");
+           caption.setAttribute("class","form-group");
+            caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Caption..'>"
+            var option=document.createElement("div");
+            var option1=document.createElement("div");
+            var image=document.createElement("img");
+            image.setAttribute("id","cm-img");
+            image.alt="";
+            image.style.objectFit="cover";
+            image.style.width="100%";
+            image.style.height="150px";
+            
+            option1.setAttribute("class","input-group mb-3");
+            var option2=document.createElement("div");
+            option2.setAttribute("class","input-group mb-3");
+            option.setAttribute("class","left-col");
+            option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='ImageBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
+            option2.innerHTML="<div class='form-group'> <input type='text' class='form-control custom-link-input' placeholder='or Paste Link' id='ImageLink'><label class='' for='ImageLink'></label>"
+          
+            option.innerHTML="";
+            option.appendChild(caption);
+            option.appendChild(image);
+           option.appendChild(option1);
+           option.appendChild(option2);
+          
+           body.innerHTML="";
+           body.appendChild(option); 
+           body.appendChild(button) 
+           option1.getElementsByTagName('div')[0].getElementsByTagName('input')[0].addEventListener('change',(e)=>{
+            console.log(e);  
+            
+            readURL(document.getElementById("ImageBrowse"),(e)=>{
+                    document.getElementById("cm-img").src=e.target.result;
+                    message.type="Image";
+                    message.image=e.target.result;
+                    message.video="";
+                    message.voice="";
+                    message.gif=""
+                    message.text=$("#caption").val();
+            if(document.getElementById("ImageBrowse").value.length>=1)
+                    button.style.display="";
+                        else{
+                            button.style.display="none";
+                        }
+
+                })
+             
+            })  
+            option2.getElementsByTagName('div')[0].getElementsByTagName('input')[0].addEventListener('keyup',(e)=>{
+                if(document.getElementById("ImageLink").value.length>=1)
+                button.style.display="";
+                  else{
+                      button.style.display="none";
+                  }
+                document.getElementById("cm-img").src= document.getElementById("ImageLink").value;
+                message.type="Image";
+                message.image=document.getElementById("ImageLink").value;
+                message.video="";
+                message.voice="";
+                message.gif=""
+                message.text=$("#caption").val();
+               }) 
+               button.addEventListener("click",()=>{
+                postMessage(message);
+                document.getElementById("ImageLink").value="";
+                document.getElementById("cm-img").src="";
+                $('#upload-menu').collapse('hide')
+            })
+        }break;
+        case "Video":{
+
+            var caption=document.createElement("div");
+            caption.setAttribute("class","form-group");
+             caption.innerHTML=" <input type='text' class='form-control' id='caption' aria-describedby='' placeholder='Comment..'>"
+             
+             var option=document.createElement("div");
+             var option1=document.createElement("div");
+             var video=document.createElement("video");
+             video.setAttribute("autoplay","");
+             video.setAttribute("controls","");
+             video.setAttribute("id","myVideo");
+             video.style.width="100%";
+             video.style.height="100%";
+ 
+             var videoSrc=document.createElement("source");
+             videoSrc.setAttribute("type","video/mp4");
+            
+             videoSrc.setAttribute("id","videoSrc");
+             video.appendChild(videoSrc);
+             
+             option1.setAttribute("class","input-group mb-3");
+             var option2=document.createElement("div");
+             option2.setAttribute("class","input-group mb-3");
+             option.setAttribute("class","left-col");
+             option1.innerHTML="<div class='custom-file'> <input type='file' class='custom-file-input'id='vidBrowse'><label class='custom-file-label' for='ImageBrowse'>Choose file</label>"
+             option2.innerHTML="<div class='form-group'> <input type='text' class='form-control custom-link-input' placeholder='or Paste Link' id='vidLink'><label class='' for='ImageLink'></label>"
+           
+             option.innerHTML="";
+             option.appendChild(caption);
+             option.appendChild(video);
+            option.appendChild(option1);
+            option.appendChild(option2);
+           
+            body.innerHTML="";
+           body.appendChild(option); 
+           body.appendChild(button) 
+            option1.getElementsByTagName('div')[0].addEventListener('change',(e)=>{
+               readURL(document.getElementById("vidBrowse"),(e)=>{
+                if(document.getElementById("videoSrc").value.length>=1)
+                button.style.display="";
+                  else{
+                      button.style.display="none";
+                  }
+                   document.getElementById("videoSrc").src=e.target.result;document.getElementById("myVideo").load();
+                   message.type="Video";
+                   message.image="";
+                   message.gif=""
+                   message.video=e.target.result;
+                   message.voice="";
+                   message.text=$("#caption").val();
+                 })
+              })  
+              option2.getElementsByTagName('div')[0].addEventListener('keyup',(e)=>{
+                if(document.getElementById("vidLink").value.length>=1)
+                button.style.display="";
+                  else{
+                      button.style.display="none";
+                  } 
+                document.getElementById("videoSrc").src= document.getElementById("vidLink").value;
+                 document.getElementById("myVideo").load();
+                 message.type="Video";
+                 message.image="";
+                 message.video=document.getElementById("vidLink").value;
+                 message.voice="";
+                 message.gif="";
+                 message.text=$("#caption").val();
+             }) ;
+             button.addEventListener("click",()=>{
+                postMessage(message);
+                document.getElementById("vidLink").value="";
+                document.getElementById("cm-img").src="";
+                $('#upload-menu').collapse('hide')
+            })
+        }break;
+        case "Vm":{
+            var option = document.createElement("div");
+            option.style.textAlign="center"
+            var option1 = document.createElement("div");
+            var time = document.createElement("label");
+            time.setAttribute("id", "timeElapsed");
+            time.textContent = "--/30s";
+           
+            var info = document.createElement("small");
+           // info.setAttribute("id", "timeElapsed");
+            info.textContent = "click to play/stop, double click to restart";
+
+
+            option.setAttribute("class", "rec centered-row");
+          
+            var option2 = document.createElement("div");
+            option1.setAttribute("class", "centered-col");
+            option2.setAttribute("class", "centered-col text-center overlay-cont record");
+              var option2b = document.createElement("div");
+             option2b.setAttribute("class", "centered-col text-center circle-overlay");
+            option2b.style.backgroundColor ="white";
+            option2b.style.fontSize="20px"
+             
+                         
+            var option2a = document.createElement("div");
+              option2a.setAttribute("class", "centered-row");
+                           option2a.appendChild(option2);
+            option2.innerHTML ="<i class='fas fa-assistive-listening-systems'></i>"
+            option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+             option2.appendChild(option2b);
+            
+            option2b.addEventListener('click',()=>{
+              
+                 toggleRecState(option2,option2b,time,comment)
+             })
+            option2b.addEventListener('dblclick', () => {
+
+             isRec=0;
+                time.textContent = "--/30s";
+             player.pause();
+                option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                option2.appendChild(option2b);
+            })
+            $(".record")
+                .focusout(function(){
+                 console.log("focus lost")
+                 isRec = 0;
+                 time.textContent = "--/30s";
+                 player.pause();
+                 option2.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                 option2b.innerHTML = "<i class='fas fa-assistive-listening-systems'></i>"
+                 option2.appendChild(option2b);
+
+             })
+            option2a.style.width="100%";
+              option.innerHTML = "";
+            option1.appendChild(info);
+              option1.appendChild(option2a);
+            option1.appendChild(time);
+          
+            option.appendChild(option1);
+
+            body.innerHTML = "";
+            body.appendChild(option);
+           
+         
+        }break;
+        default:{body.innerHTML="<textarea id='_text'style='width:100%;height:86px;font-weigth:bold' placeholder='What is on Your Mind'></textarea>";   
+        body.appendChild(button)
+        body.getElementsByTagName("textarea")[0].addEventListener('keyup',()=>{
+          if($("#_text").val().length>=1)
+          button.style.display="";
+            else{
+                button.style.display="none";
+            }
+            message.type="Text";
+            message.image="";
+            message.video="";
+            message.voice="";
+            message.gif="";
+
+            message.title=$("#_text").val();
+                //console.log($("#_text").val());
+            });
+        button.addEventListener("click",()=>{
+            postMessage(message);
+            $("#_text").val("");
+            $('#upload-menu').collapse('hide');
+        })
+        }break;
+        }
+    return body;
+}
 function loadMessageBoard(){
  var db = firebase.firestore();
-    let doc = db.collection('MessageBoard').onSnapshot({ includeMetadataChanges: true },querySnapshot => {
+    let doc = db.collection('MessageBoard').orderBy("postedOn",'asc').onSnapshot({ includeMetadataChanges: true },querySnapshot => {
         querySnapshot.docChanges().forEach(change => {
+            console.log(change.doc.data());
           if (change.type === 'added') {
             console.log('New Message: ', change.doc.data());
+            if(!change.doc.data().title!=undefined)
             MESSAGES.push(change.doc.data());
             updateUI();
           }
@@ -309,6 +764,8 @@ function MessageBoardCard(messageBoard)
     {
         AspectRatioCont.appendChild(image);
         AspectRatioCont.appendChild(overlay);
+        overlay.innerHTML="<span class='badge badge-dark'>Image</span>";
+    
         card_body.appendChild(AspectRatioCont);
     }
     else
@@ -320,6 +777,17 @@ function MessageBoardCard(messageBoard)
         overlay.innerHTML="<span class='badge badge-dark'>Video</span>";
         card_body.appendChild(AspectRatioCont);
         
+    }
+    else
+        if(messageBoard.type=="Gif")
+    {
+        image.src=messageBoard.gif;
+        AspectRatioCont.appendChild(image);
+        AspectRatioCont.appendChild(overlay);
+        overlay.innerHTML="<span class='badge badge-dark'>Gif</span>";
+    
+        card_body.appendChild(AspectRatioCont);
+    
     }
 
     
@@ -930,6 +1398,42 @@ function setupGifResults(data,parent,comment){
         }
         
     }
+}
+    function _setupGifResults(data,parent,container,message,done=()=>{}){
+    
+       container.innerHTML="";
+        console.log(data.length)
+        for(var i=0;i<data.length;i++){
+            var giphy=data[i];
+            console.log(giphy)
+            var img=document.createElement("img");
+            img.setAttribute("class","grow")
+            img.alt="...";
+            img.style.objectFit="cover";
+            img.style.width="50px";
+            img.style.height="50px";
+            img.src=giphy.images.original.url;
+            img.onwaiting=()=>{
+                img.src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/35771931234507.564a1d2403b3a.gif";
+            }
+            img.style.margin="12px";
+            container.appendChild(img);
+            clicked(img);
+            function clicked(elem){
+            elem.addEventListener("click",()=>{
+               parent.src= elem.src,
+               message.type="Gif";
+               message.image=""
+               message.video="";
+               message.voice="";
+               message.gif=elem.src;
+               message.text=$("#caption").val();
+               done();
+           
+            });
+            }
+            
+        }
    // var slideContainer = $('.gif-slider');
    //  slideContainer.slick();
     
@@ -1240,6 +1744,18 @@ function updateReplyUI(comments){
         })
       
     
+}
+function postMessage(message){
+    const db = firebase.firestore();
+    db
+        .collection("MessageBoard")
+        .add(message)
+        .then(function (response) {
+            
+        })
+        .catch(function (error) {
+    
+        });
 }
 function _addComment(parentId,child){
     //save to 

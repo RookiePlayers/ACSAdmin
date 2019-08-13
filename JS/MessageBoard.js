@@ -1,3 +1,5 @@
+
+
 var MESSAGES=[];
 var PROFILES=[];
 var MyProfile; 
@@ -1454,6 +1456,7 @@ function setupGiphyAPI(){
     var xhr = $.get("http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=aO8F8N8hYtN6sYd3xucGxcLqvVu0gcPS&limit=5");
 xhr.done(function(data) { console.log("success got data", data); });
 }
+
 function readURL(input,onload) {
 console.log("loaded",input.files);
 

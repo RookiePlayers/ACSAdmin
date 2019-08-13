@@ -11,6 +11,7 @@
     <title>ACS</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round|Open+Sans">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -19,7 +20,10 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/granim/1.1.0/granim.min.js"></script>
-      <!--Circle slider-->                                
+   
+
+ 
+    <!--Circle slider-->                                
     <script src="https://cdnjs.cloudflare.com/ajax/libs/roundSlider/1.3.2/roundslider.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Concert+One|Jacques+Francois+Shadow|Orbitron|Press+Start+2P|Rajdhani&display=swap');
@@ -70,11 +74,31 @@
      
     </div>
      <div class=" meetings row">
-          <div class="mapArea"></div>
-          <div class="optionsArea left-col">
-              <div class="profiles-online">
+          <div class="mapArea" id="mapArea"></div>
+          <div class="optionsArea left-col p-4">
+              <input type="text" id="searchPlace" class="searchPlace">
+              <div class="suggestionBox">
+                  <div class="suggestions left-col list-group"></div>
+                </div>
+              <div class="myLocation text-center">
+                  
+                  <h6><i class="fas fa-map-marker-alt grow findMe"></i>  My Location</h6>
+                    <h6 id="myLocation"></h6>
+                </div>
+                <div class="space-between-row">
+                        <p><i class="fas fa-map-marker"style="color:lightgreen"></i> Online </p>
+                        <!---input type="text" id="search"-->
+                </div>
+              <div class="profiles-online list-group">
 
               </div>
+              <div class="space-between-row m-1">
+                    <p><i class="fas fa-power-off"style="color:red"></i> Offline </p>
+                    <!---input type="text" id="search"-->
+            </div>
+              <div class="profiles-offline list-group">
+
+                </div>
               <div class="setUpWaypoint">
 
               </div>
@@ -93,8 +117,10 @@
    <script src="../JS/firebaseInit.js"></script>
     <script src="../JS/home.js"></script>
     <script src="../JS/Meetings.js"></script>
-    <script async defer
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol-geocoder"></script>
+    <!---script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6zuIIMhAiOdPO94IhZIk29kz4OtiFMR0&callback=initMap">
-    </script>
+    </script-->
 </body>
 </html>

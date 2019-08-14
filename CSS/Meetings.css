@@ -49,3 +49,44 @@ overflow-y: scroll;
 .profiles-online img{
    border:2px rgb(81, 255, 0) solid
 }
+#ping_dot{
+    
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        text-decoration: none;
+        background-color: #77d2ff;
+        border-radius: 55px;
+        border: dotted 3px;
+        -moz-animation-duration: .75s;
+        -webkit-animation-duration: .75s;
+        -moz-animation-name: breathe;
+        -webkit-animation-name: breathe;
+        animation-iteration-count: infinite;
+        /* W3C and Opera */
+        -moz-animation-iteration-count: infinite;
+        /* Firefox */
+        -webkit-animation-iteration-count: infinite;
+        /*Safari and Chrome*/
+        animation-direction:alternate;
+        /* W3C and Opera */
+        -moz-animation-direction:alternate;
+        /* Firefox */
+        -webkit-animation-direction:alternate;
+        /* Safari and Chrome */
+        animation-delay:0s;
+        /* W3C and Opera */
+        -moz-animation-delay:0s;
+        /* Firefox */
+        -webkit-animation-delay:0s;
+        /* Safari and Chrome */
+    
+}
+.ping-container {
+        /* float: left; */
+        display: block;
+        width: 100px;
+        height: 100px;
+        /* margin: 100px; */
+        position: relative;
+}

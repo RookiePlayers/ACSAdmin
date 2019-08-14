@@ -74,7 +74,8 @@ function initUI(){
         })
       }));
      
-   
+      setPing(0,0,map,icon="")
+      
       geolocation.setTracking(true);
       var coordinates = geolocation.getPosition();
       positionFeature.setGeometry(coordinates ?
@@ -112,9 +113,52 @@ function initUI(){
        },view)
      })
       getOnlineUsers();
+     $(".clearPings").on("click",()=>{
+         map.removeOverlay(pingoverlayelement);
+         map.removeOverlay(pingsoverlayelement);
+         
+     })
+      map.addOverlay(pingoverlayelement);
+    }
+    var ping;
+    var pingoverlayelement;
+    var pingsoverlayelement;
+    function setPing(lon,lat,map,icon=""){
+        var pingcon=document.createElement("div");
+        var _pingcon=document.createElement("div");
+        pingcon.setAttribute("class","ping-container"); 
+        _pingcon.setAttribute("class","ring small-ping");
+        
+        pingcon.appendChild(_pingcon);pingcon.innerHTML+="<span></span>";
+         ping=new ol.Feature();
+        ping.setStyle(new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 6,
+            fill: new ol.style.Fill({
+              color: '#3399CC'
+            }),
+            stroke: new ol.style.Stroke({
+              color: '#fff',
+              width: 2
+            })
+          })
+        })); 
+        var markerSource = new ol.source.Vector({
+            features:[ping] //add an array of features
+          });
+           pingoverlayelement = new ol.Overlay({
+            stopEvent: false,
+            positioning: 'center-center',
+            element: pingcon
+          });
+          ping.setGeometry(
+            new ol.geom.Point(ol.proj.fromLonLat([lon,lat])
+            ));
+          pingoverlayelement.setPosition(ping.getGeometry().getCoordinates());
+        
     }
     function addMarker(lon,lat,map,icon=""){
-        icon.addEventListener("click",()=>{
+   if(icon!="")icon.addEventListener("click",()=>{
             flyTo(new ol.proj.fromLonLat([lon,lat]),()=>{},view,16)
         })
         var marker=new ol.Feature();
@@ -146,14 +190,16 @@ function initUI(){
                 map:map
               })
               else
-              {var overlayelement = new ol.Overlay({
+              {
+                   pingsoverlayelement = new ol.Overlay({
                 stopEvent: false,
                 positioning: 'center-center',
                 element: icon
               });
-              overlayelement.setPosition(marker.getGeometry().getCoordinates());
+              pingsoverlayelement.setPosition(marker.getGeometry().getCoordinates());
             
-              map.addOverlay(overlayelement);}
+              map.addOverlay(pingsoverlayelement);
+            }
     }
     function setupLocations(){
        
@@ -203,6 +249,12 @@ function initUI(){
        
      }
     function flyTo(location, done,view,zoom=10) {
+        map.addOverlay(pingoverlayelement);
+        if(pingsoverlayelement!=undefined)map.addOverlay(pingsoverlayelement);
+        ping.setGeometry(
+            new ol.geom.Point(location)
+            );
+            pingoverlayelement.setPosition(ping.getGeometry().getCoordinates());
         var duration = 2000;
         var zoom = zoom;
         var parts = 2;
@@ -298,6 +350,7 @@ function updateUI(){
                 $(".profiles-online").append(list);
                 
                 list.addEventListener("click",()=>{
+                   
                     flyTo(new ol.proj.fromLonLat([user.location.long,user.location.lat]),()=>{},view,16)
                 })
                 addMarker(user.location.long,user.location.lat,map,image.cloneNode(true))

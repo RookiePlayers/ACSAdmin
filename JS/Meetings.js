@@ -1,11 +1,4 @@
-var LocationData={
-    "uid":"",
-    "location":{
-        "long":0,
-        "lat":0,
 
-    }
-}
 var MyLocation={
     locationdata:""
 }
@@ -239,6 +232,7 @@ function initUI(){
     
 function setLocation(profile){
     console.log(profile);
+    if(LocationData.uid=="")
     navigator.geolocation.getCurrentPosition((loc)=>{
         LocationData.uid=profile.id;
         LocationData.location.long=loc.coords.longitude;
@@ -257,12 +251,29 @@ function setLocation(profile){
                
              
             });
+            else{
+                const db = firebase.firestore();
+              
+              db.collection("Locations").doc(profile.id).set(
+                  LocationData
+              ).then(function (response) {
+                
+                    })
+                    .catch(function (error) {
+                
+                    });
+                }
 }
 var ONLINEUSERS=[],OFFLINEUSERS=[];
+
+function getUserLocation(uid){
+
+}
 function updateUI(){
     $(".profiles-online").html('');
     $(".profiles-offline").html('');
     let database = firebase.database();
+   // alert(ONLINEUSERS.length);
     ONLINEUSERS.forEach(user=>{
     
         database.ref("Profile/"+user.uid).on("child_added",(p)=>{
@@ -326,22 +337,51 @@ function getProfileById(){
 }
 function getOnlineUsers(){
     const db = firebase.firestore();
-    let doc = db.collection('Locations').onSnapshot({ includeMetadataChanges: true },querySnapshot => {
+    let doc = db.collection('Online').onSnapshot({ includeMetadataChanges: true },querySnapshot => {
         querySnapshot.docChanges().forEach(change => {
             console.log(change.doc.data());
           if (change.type === 'added') {
-            getOfflineUsers();
-            if(!change.doc.data().title!=undefined)
-            ONLINEUSERS.push(change.doc.data());
            
+            if(!change.doc.data().uid!=undefined){
+                if(change.doc.data().uid!=null)
+                db.collection("Locations").doc(change.doc.data().uid).get()
+                .then(doc =>{
+                    console.log("$$",doc)
+                  if(doc!=undefined)
+                    console.log("??",doc.data());
+                      
+                        ONLINEUSERS.push(doc.data());
+                        getOfflineUsers();
+                    
+                }).then(function (response) {
+                    readytoGo=true;
+                    getOfflineUsers();
+                })
+                .catch(function (error) {
+                    console.log(error.message)
+                });
+               
+        }
+        getOfflineUsers();
           }
           if (change.type === 'modified') {
         
-            ONLINEUSERS.push(change.doc.data())
+            db.collection("Locations").doc(change.doc.data().uid).get().then(querySnapshot =>{
+                querySnapshot.docs().forEach(change => {
+                    if (change.type === 'added') 
+                    ONLINEUSERS.push(change.doc.data());
+                })
+            })
           }
           if (change.type === 'removed') {
+            db.collection("Locations").doc(change.doc.data().uid).get().then(querySnapshot =>{
+                querySnapshot.docs().forEach(change => {
+                    if (change.type === 'added') 
+                    
+                    ONLINEUSERS.splice (ONLINEUSERS.indexOf(change.doc.data()))
+                })
+            })
           
-            ONLINEUSERS.splice (ONLINEUSERS.indexOf(change.doc.data()))
           }
           var source = querySnapshot.metadata.fromCache ? "local cache" : "server";
           console.log("Data came from " + source);
@@ -349,6 +389,7 @@ function getOnlineUsers(){
       });
 }
 function getOfflineUsers(){
+    OFFLINEUSERS=[];
     let database = firebase.database();
     database.ref("Profile/")
     .on("value",(ds)=>{
@@ -396,6 +437,7 @@ var thread=setInterval(() => {
 }, 1000);
 }
 function updateUserLocation(profile){
+    if(LocationData.uid=="")
     navigator.geolocation.getCurrentPosition((loc)=>{
 LocationData.uid=profile.id;
 LocationData.location.long=loc.coords.longitude;
@@ -414,6 +456,18 @@ MyLocation.locationdata=LocationData;
         
     
     });
+    else{
+        const db = firebase.firestore();
+     
+        db.collection("Locations").doc(profile.id).update({
+            "location":LocationData.location
+        }).then(function (response) {
+            readytoGo=true;
+        })
+        .catch(function (error) {
+            console.log(error.message)
+        });
+    }
 }
 getLocation();
 

@@ -36,6 +36,7 @@ function initUI(){
       });
       
      map = new ol.Map({
+        interactions: defaultInteractions().extend([new Drag()]),
         target: 'mapArea',
         layers: [
           new ol.layer.Tile({
@@ -75,6 +76,8 @@ function initUI(){
       }));
      
       setPing(0,0,map,icon="")
+     setCheckpoint(0,0,map,icon="");
+
       
       geolocation.setTracking(true);
       var coordinates = geolocation.getPosition();
@@ -115,14 +118,15 @@ function initUI(){
       getOnlineUsers();
      $(".clearPings").on("click",()=>{
          map.removeOverlay(pingoverlayelement);
-         map.removeOverlay(pingsoverlayelement);
+         map.removeOverlay(checkpointoverlayelement);
          
      })
       map.addOverlay(pingoverlayelement);
+      map.addOverlay(checkpointoverlayelement);
     }
-    var ping;
+    var ping,checkpoint;
     var pingoverlayelement;
-    var pingsoverlayelement;
+    var pingsoverlayelement,checkpointoverlayelement;
     function setPing(lon,lat,map,icon=""){
         var pingcon=document.createElement("div");
         var _pingcon=document.createElement("div");
@@ -155,6 +159,42 @@ function initUI(){
             new ol.geom.Point(ol.proj.fromLonLat([lon,lat])
             ));
           pingoverlayelement.setPosition(ping.getGeometry().getCoordinates());
+        
+    }
+    function setCheckpoint(lon,lat,map,icon=""){
+        var pingcon=document.createElement("div");
+        var _pingcon=document.createElement("image");
+        pingcon.setAttribute("class","checkPoint"); 
+        _pingcon.setAttribute("src","../Resource/flag1.png");
+        _pingcon.style.width="20px";
+        _pingcon.style.height="20px";
+
+        pingcon.appendChild(_pingcon);pingcon.innerHTML+="<span></span>";
+        checkpoint=new ol.Feature();
+        checkpoint.setStyle(new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 6,
+            fill: new ol.style.Fill({
+              color: '#3399CC'
+            }),
+            stroke: new ol.style.Stroke({
+              color: '#fff',
+              width: 2
+            })
+          })
+        })); 
+        var markerSource = new ol.source.Vector({
+            features:[checkpoint] //add an array of features
+          });
+          checkpointoverlayelement = new ol.Overlay({
+            stopEvent: false,
+            positioning: 'center-center',
+            element: pingcon
+          });
+          checkpoint.setGeometry(
+            new ol.geom.Point(ol.proj.fromLonLat([lon,lat])
+            ));
+            checkpointoverlayelement.setPosition(checkpoint.getGeometry().getCoordinates());
         
     }
     function addMarker(lon,lat,map,icon=""){
@@ -201,12 +241,67 @@ function initUI(){
               map.addOverlay(pingsoverlayelement);
             }
     }
+    function calTime(dis,elemid){
+        window.addEventListener('devicemotion', function(event) {
+            var spd= Math.sqrt(Math.sqrt(event.acceleration.x)); 
+            dis=dis*1000;
+            var time=spd!=0?dis/spd:dis/1;
+            var ctime=spd!=0?dis/spd:dis/19.3121;
+            var wtime=spd!=0?dis/spd:dis/4.5;
+            var dtime=spd!=0?dis/spd:dis/50;
+            console.log(formatTime(time));
+            var cycle=document.createElement("div");
+            cycle.innerHTML='<div class="space-between-row-wrap"> <i class="fa fa-bicycle"></i><label>  ' +formatTime(ctime)+' </label></div> ' 
+            var driving=document.createElement("div");
+            driving.innerHTML='<div class="space-between-row-wrap"> <i class="fas fa-car"></i><label>  '+formatTime(dtime)+' </label></div> '
+            var walking=document.createElement("div");
+            walking.innerHTML='<div class="space-between-row-wrap"> <i class="fas fa-walking"></i><label>  '+formatTime(wtime)+'</label></div> '
+          
+      //  $(elemid).text("Estimated time: "+formatTime(time))
+      $(elemid).attr("class","space-between-col")
+            $(elemid).html(walking.outerHTML+cycle.outerHTML+driving.outerHTML)
+            
+          });
+       
+    }
+    function formatTime(d) {
+        d = Number(d);
+        var y=Math.floor(d/31536000);
+        var dy=Math.floor(d%31536000/86400)
+        var h = Math.floor(d%86400 / 3600);
+        var m = Math.floor(d % 3600 / 60);
+        var s = Math.floor(d % 3600 % 60);
+        if(y==0){
+        if(dy==0){
+        if(h==0){
+            if(m==0)
+            return s+ ' Seconds';
+            else
+            ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+        }else
+            return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+        }
+        else
+        return dy+'d  '+('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+    }
+    else   return y+"yr  "+dy+'d  '+('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+    }
+    function calcDistance(lat1,long1,lat2,long2){
+      
+      console.log(lat1,long1);
+      console.log(lat2,long2)
+        var R = 6371; // metres
+        var distance = Math.acos(Math.sin(lat2 * Math.PI / 180.0) * Math.sin(lat1 * Math.PI / 180.0) +
+    Math.cos(lat2 * Math.PI / 180.0) * Math.cos(lat1 * Math.PI / 180.0) *
+    Math.cos((long1 - long2) * Math.PI / 180.0)) * R;
+  return Math.floor(distance);
+    }
     function setupLocations(){
        
         reverseGeocode(MyLocation.locationdata.location.long, MyLocation.locationdata.location.lat)
        
     }
-    function getGeocode(search,exec=()=>{},view){
+    function getGeocode(search,exec=()=>{},view,meeting=""){
         console.log(search)
         fetch('http://nominatim.openstreetmap.org/search.php?key=KEY&format=json&q='+search+'&addressdetails=1&limit=3&viewbox=-1.99%2C52.02%2C0.78%2C50.94&exclude_place_ids=41697')
         .then(function(response) {
@@ -227,9 +322,12 @@ function initUI(){
                        console.log(s.lon,s.lat)
                        
                         exec(Number(s.lon),Number(s.lat));
+                       
    
                     })
+                    if(meeting=="")
                  document.getElementsByClassName("suggestions")[0].appendChild(link);
+                else document.getElementsByClassName("meeting-suggestions")[0].appendChild(link);
                 });
             
            });
@@ -255,6 +353,7 @@ function initUI(){
             new ol.geom.Point(location)
             );
             pingoverlayelement.setPosition(ping.getGeometry().getCoordinates());
+            
         var duration = 2000;
         var zoom = zoom;
         var parts = 2;
@@ -342,8 +441,10 @@ function updateUI(){
                 
 
                 list.appendChild(image);
-                inner.innerHTML="<label>"+p.val().first_name+" | "+p.val().id+"</label><br>";
-                reverseGeocode(user.location.long,user.location.lat,(e)=>{
+                inner.innerHTML="<label>Distance: "+calcDistance(MyLocation.locationdata.location.lat, MyLocation.locationdata.location.long,user.location.lat,user.location.long)+" Km away</label><br><small id='time-"+user.uid+"'></small><br><label>"+p.val().first_name+" | "+p.val().id+"</label><br>";
+               calTime(calcDistance(MyLocation.locationdata.location.lat, MyLocation.locationdata.location.long,user.location.lat,user.location.long),"#time-"+user.uid);
+                
+               reverseGeocode(user.location.long,user.location.lat,(e)=>{
                     inner.innerHTML+= "<label>location: "+e.address.city_district+" - <small>"+e.address.county+"</small></label>"
                 })
                 list.appendChild(inner);
@@ -523,7 +624,140 @@ MyLocation.locationdata=LocationData;
     }
 }
 getLocation();
+setupMeeting();
+function setupMeeting(){
+    var Meeting={
+        "title":"",
+        "desc":"",
+        "location":{
+            "long":0,
+            "lat":0
+        }
+    };
+    $("#meeting-loc").on('keyup',function(){
+        console.log(1)
+          document.getElementsByClassName("meeting-suggestions")[0].innerHTML="";
+       getGeocode( document.getElementById("meeting-loc").value,(lon,lat)=>{
+           console.log(MyLocation.locationdata.location.long, MyLocation.locationdata.location.lat)
+           console.log(lon,lat)
+           map.addOverlay(checkpointoverlayelement);
+           if(checkpointoverlayelement!=undefined)
+           map.addOverlay(checkpointoverlayelement);
+           checkpoint.setGeometry(
+               new ol.geom.Point(new ol.proj.fromLonLat([lon,lat]))
+               );
+               checkpointoverlayelement.setPosition(checkpoint.getGeometry().getCoordinates());
+              
+         
 
+        flyTo(new ol.proj.fromLonLat([lon, lat]),()=>{},view)
+       },view,"yes")
+     })
+
+}
+var Drag = (function (PointerInteraction) {
+    function Drag() {
+    new  ol.interactions.Pointer.call(this, {
+        handleDownEvent: handleDownEvent,
+        handleDragEvent: handleDragEvent,
+        handleMoveEvent: handleMoveEvent,
+        handleUpEvent: handleUpEvent
+      });
+      this.coordinate_ = null;
+
+      /**
+       * @type {string|undefined}
+       * @private
+       */
+      this.cursor_ = 'pointer';
+
+      /**
+       * @type {module:ol/Feature~Feature}
+       * @private
+       */
+      this.feature_ = null;
+
+      /**
+       * @type {string|undefined}
+       * @private
+       */
+      this.previousCursor_ = undefined;
+    }
+
+    if ( PointerInteraction ) Drag.__proto__ = PointerInteraction;
+    Drag.prototype = Object.create( PointerInteraction && PointerInteraction.prototype );
+    Drag.prototype.constructor = Drag;
+
+    return Drag;
+  }(new ol.interactions.Pointer));
+ /**
+       * @param {module:ol/MapBrowserEvent~MapBrowserEvent} evt Map browser event.
+       * @return {boolean} `true` to start the drag sequence.
+       */
+      function handleDownEvent(evt) {
+        var map = evt.map;
+
+        var feature = map.forEachFeatureAtPixel(evt.pixel,
+          function(feature) {
+            return feature;
+          });
+
+        if (feature) {
+          this.coordinate_ = evt.coordinate;
+          this.feature_ = feature;
+        }
+
+        return !!feature;
+      }
+
+
+      /**
+       * @param {module:ol/MapBrowserEvent~MapBrowserEvent} evt Map browser event.
+       */
+      function handleDragEvent(evt) {
+        var deltaX = evt.coordinate[0] - this.coordinate_[0];
+        var deltaY = evt.coordinate[1] - this.coordinate_[1];
+
+        var geometry = this.feature_.getGeometry();
+        geometry.translate(deltaX, deltaY);
+
+        this.coordinate_[0] = evt.coordinate[0];
+        this.coordinate_[1] = evt.coordinate[1];
+      }
+
+
+      /**
+       * @param {module:ol/MapBrowserEvent~MapBrowserEvent} evt Event.
+       */
+      function handleMoveEvent(evt) {
+        if (this.cursor_) {
+          var map = evt.map;
+          var feature = map.forEachFeatureAtPixel(evt.pixel,
+            function(feature) {
+              return feature;
+            });
+          var element = evt.map.getTargetElement();
+          if (feature) {
+            if (element.style.cursor != this.cursor_) {
+              this.previousCursor_ = element.style.cursor;
+              element.style.cursor = this.cursor_;
+            }
+          } else if (this.previousCursor_ !== undefined) {
+            element.style.cursor = this.previousCursor_;
+            this.previousCursor_ = undefined;
+          }
+        }
+      }
+
+
+      /**
+       * @return {boolean} `false` to stop the drag sequence.
+       */
+      function handleUpEvent() {
+        this.coordinate_ = null;
+        this.feature_ = null;
+        return false;
+      }
 function initMap() {
     // The location of Uluru
     var uluru = {lat: -25.344, lng: 131.036};

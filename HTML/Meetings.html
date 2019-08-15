@@ -74,6 +74,10 @@
      
     </div>
      <div class=" meetings row">
+         <div class="mapOverlay left-col">
+            <p><i class="fas fa-map-marker">Current Ping: </i> <label id=mapOverlay-loc-name> </label></p>
+            <div id=mapOverlay-info class="space-evenly-column"></div>
+        </div>
           <div class="mapArea" id="mapArea"></div>
           <div class="optionsArea left-col p-4">
               <button class="btn btn-primary clearPings">Clear Pings</button>
@@ -100,8 +104,22 @@
               <div class="profiles-offline list-group">
 
                 </div>
-              <div class="setUpWaypoint">
-
+              <div class="setUpWaypoint centered-col">
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#meetingSetuper" aria-expanded="false" aria-controls="meetingSetuper">
+                            Create New Check Point
+                    </button>
+                    
+                        <div class="collapse" id="meetingSetuper">
+                          <div class="card card-body">
+                                <input type="text" class="form-control" id="meeting-title" placeholder="Meeting Title" aria-label="Meeting Title" aria-describedby="basic-addon2">
+                                <textarea type="textarea" class="form-control" id="meeting-desc" placeholder="About Meeting" aria-label="About Meeting" aria-describedby="basic-addon2"style="width:100%;height:150px"></textarea>
+                                <input type="text" class="form-control" id="meeting-loc" placeholder="Location.." aria-label="Location" aria-describedby="basic-addon2">
+                                <div class="meeting-suggestions left-col list-group"></div>
+                                <button class="btn btn-primary" type="button" id="meeting-btn"data-toggle="collapse" data-target="#meetingSetuper" aria-expanded="false" aria-controls="meetingSetuper">
+                                        Set Meeting
+                                </button>
+                          </div>
+                        </div>
               </div>
           </div>
       </div>
@@ -120,6 +138,8 @@
     <script src="../JS/Meetings.js"></script>
     <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ol-geocoder"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
     <!---script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6zuIIMhAiOdPO94IhZIk29kz4OtiFMR0&callback=initMap">
     </script-->

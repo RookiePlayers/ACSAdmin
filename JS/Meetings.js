@@ -36,8 +36,7 @@ function initUI(){
       });
       
      map = new ol.Map({
-        interactions: defaultInteractions().extend([new Drag()]),
-        target: 'mapArea',
+          target: 'mapArea',
         layers: [
           new ol.layer.Tile({
             source: new ol.source.OSM()
@@ -123,7 +122,12 @@ function initUI(){
      })
       map.addOverlay(pingoverlayelement);
       map.addOverlay(checkpointoverlayelement);
+     
     }
+
+
+
+
     var ping,checkpoint;
     var pingoverlayelement;
     var pingsoverlayelement,checkpointoverlayelement;
@@ -161,11 +165,18 @@ function initUI(){
           pingoverlayelement.setPosition(ping.getGeometry().getCoordinates());
         
     }
+    
+
+
     function setCheckpoint(lon,lat,map,icon=""){
         var pingcon=document.createElement("div");
         var _pingcon=document.createElement("image");
-        pingcon.setAttribute("class","checkPoint"); 
-        _pingcon.setAttribute("src","../Resource/flag1.png");
+        pingcon.setAttribute("class","checkPoint grow"); 
+        _pingcon.setAttribute("src","../Resources/flag2.jpg");
+        pingcon.setAttribute("data-toggle","tooltip");
+        pingcon.setAttribute("data-html","true");
+        pingcon.setAttribute("title","--")
+      
         _pingcon.style.width="20px";
         _pingcon.style.height="20px";
 
@@ -195,7 +206,32 @@ function initUI(){
             new ol.geom.Point(ol.proj.fromLonLat([lon,lat])
             ));
             checkpointoverlayelement.setPosition(checkpoint.getGeometry().getCoordinates());
+            var translateCheckpoint =  new ol.interaction.Modify({
+                features: new ol.Collection([checkpoint]),
+               style:null
+            });
+            
+              map.addInteraction(translateCheckpoint);
+            
+              checkpoint.on('change',function(){
+                console.log('Feature Moved To:' + this.getGeometry().getCoordinates());
+                checkpointoverlayelement.setPosition(this.getGeometry().getCoordinates());
+                pingoverlayelement.setPosition(this.getGeometry().getCoordinates());
+                var coord=(ol.proj.toLonLat(this.getGeometry().getCoordinates()))
+                fetch('http://nominatim.openstreetmap.org/reverse?format=json&lon=' + coord[0] + '&lat=' + coord[1] )
+                .then(function(response) {
+                       return response.json();
+                   }).then(function(json) {
+                       console.log(json);
+                        document.getElementById("meeting-loc").value=json.display_name;
+                        pingcon.setAttribute("title",json.display_name.split(",")[0])
+                        $('.checkPoint').tooltip({placement: 'bottom',trigger: 'manual'}).tooltip('show');
+                        // console.log('Feature Moved To:' + this.getGeometry().getCoordinates());
+                   })
+               
+                    },checkpoint);
         
+              
     }
     function addMarker(lon,lat,map,icon=""){
    if(icon!="")icon.addEventListener("click",()=>{
@@ -303,7 +339,7 @@ function initUI(){
     }
     function getGeocode(search,exec=()=>{},view,meeting=""){
         console.log(search)
-        fetch('http://nominatim.openstreetmap.org/search.php?key=KEY&format=json&q='+search+'&addressdetails=1&limit=3&viewbox=-1.99%2C52.02%2C0.78%2C50.94&exclude_place_ids=41697')
+        fetch('https://nominatim.openstreetmap.org/search.php?key=KEY&format=json&q='+search+'&addressdetails=1&limit=3&viewbox=-1.99%2C52.02%2C0.78%2C50.94&exclude_place_ids=41697')
         .then(function(response) {
                return response.json();
            }).then(function(json) {
@@ -333,7 +369,7 @@ function initUI(){
            });
      }
     function reverseGeocode(lon,lat,exec=()=>{}) {
-        fetch('http://nominatim.openstreetmap.org/reverse?format=json&lon=' + lon + '&lat=' + lat)
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lon=' + lon + '&lat=' + lat)
           .then(function(response) {
                  return response.json();
              }).then(function(json) {
@@ -655,41 +691,7 @@ function setupMeeting(){
      })
 
 }
-var Drag = (function (PointerInteraction) {
-    function Drag() {
-    new  ol.interactions.Pointer.call(this, {
-        handleDownEvent: handleDownEvent,
-        handleDragEvent: handleDragEvent,
-        handleMoveEvent: handleMoveEvent,
-        handleUpEvent: handleUpEvent
-      });
-      this.coordinate_ = null;
 
-      /**
-       * @type {string|undefined}
-       * @private
-       */
-      this.cursor_ = 'pointer';
-
-      /**
-       * @type {module:ol/Feature~Feature}
-       * @private
-       */
-      this.feature_ = null;
-
-      /**
-       * @type {string|undefined}
-       * @private
-       */
-      this.previousCursor_ = undefined;
-    }
-
-    if ( PointerInteraction ) Drag.__proto__ = PointerInteraction;
-    Drag.prototype = Object.create( PointerInteraction && PointerInteraction.prototype );
-    Drag.prototype.constructor = Drag;
-
-    return Drag;
-  }(new ol.interactions.Pointer));
  /**
        * @param {module:ol/MapBrowserEvent~MapBrowserEvent} evt Map browser event.
        * @return {boolean} `true` to start the drag sequence.
